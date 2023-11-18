@@ -5,36 +5,24 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
+func main() {
+	chaincode, err := contractapi.NewChaincode(&PatientChaincode{})
+	if err != nil {
+		fmt.Printf("Error creating PatientChaincode: %v", err)
+		return
+	}
+
+	if err := chaincode.Start(); err != nil {
+		fmt.Printf("Error starting PatientChaincode: %v", err)
+	}
+}
+
 type PatientChaincode struct {
 	contractapi.Contract
-}
-
-type HealthRecord struct {
-	RecordID     string    `json:"recordID"`
-	RecordTypeID int       `json:"recordType"`
-	Content      string    `json:"content"`
-	CreatedDate  time.Time `json:"createdDate"`
-}
-
-type PatientWallet struct {
-	OwnerID       string                `json:"ownerID"`
-	CreatedDate   time.Time             `json:"createdDate"`
-	HealthRecords []HealthRecord        `json:"healthRecords"`
-	Consents      []HealthRecordConsent `json:"consents"`
-}
-
-type HealthRecordConsent struct {
-	OwnerID        string
-	ConsentTypeID  int
-	OrganizationID int
-	userID         int
-	CreatedDate    time.Time `json:"createdDate"`
-	ExpirationDate time.Time `json:"expirationDate"`
 }
 
 func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface, recordTypeID int, content string) error {
@@ -129,13 +117,12 @@ func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterf
 
 // GetMedicalHistory retrieves the patient's medical history
 func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface) (*PatientWallet, error) {
-	// Get the patient's identity (medical ID)
+
 	patientID, err := ctx.GetClientIdentity().GetID()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get patient ID: %v", err)
 	}
 
-	// Retrieve patient wallet from the ledger
 	walletBytes, err := ctx.GetStub().GetState(patientID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read patient wallet: %v", err)
@@ -161,16 +148,4 @@ func GenerateUniqueID() string {
 	hashString := hex.EncodeToString(hashInBytes)
 
 	return hashString
-}
-
-func main() {
-	chaincode, err := contractapi.NewChaincode(&PatientChaincode{})
-	if err != nil {
-		fmt.Printf("Error creating PatientChaincode: %v", err)
-		return
-	}
-
-	if err := chaincode.Start(); err != nil {
-		fmt.Printf("Error starting PatientChaincode: %v", err)
-	}
 }
