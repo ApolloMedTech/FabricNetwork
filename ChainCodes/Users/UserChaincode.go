@@ -48,16 +48,16 @@ func (uec *UserEnrollmentContract) EnrollUser(ctx contractapi.TransactionContext
 	return nil
 }
 
-func (uec *UserEnrollmentContract) UserExists(ctx contractapi.TransactionContextInterface, userID string) (bool, error) {
-	userJSON, err := ctx.GetStub().GetState(userID)
+func (uec *UserEnrollmentContract) UserExists(ctx contractapi.TransactionContextInterface, patientID string) (bool, error) {
+	userJSON, err := ctx.GetStub().GetState(patientID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read user from ledger: %s", err.Error())
 	}
 	return userJSON != nil, nil
 }
 
-func (uec *UserEnrollmentContract) GetUser(ctx contractapi.TransactionContextInterface, userID string) (*User, error) {
-	userJSON, err := ctx.GetStub().GetState(userID)
+func (uec *UserEnrollmentContract) GetUser(ctx contractapi.TransactionContextInterface, patientID string) (*User, error) {
+	userJSON, err := ctx.GetStub().GetState(patientID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read user from ledger: %s", err.Error())
 	}

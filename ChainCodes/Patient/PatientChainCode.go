@@ -12,7 +12,7 @@ import (
 type PatientChaincode struct {
 	contractapi.Contract
 }
-teste
+
 func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface, recordTypeID int, content string) error {
 
 	patientID, err := ctx.GetClientIdentity().GetID()
