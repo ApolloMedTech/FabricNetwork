@@ -1,4 +1,4 @@
-package chaincodes
+package chaincode
 
 import (
 	"crypto/sha256"
@@ -38,17 +38,10 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
 	}
 
 	var patientWallet PatientWallet
-	if walletBytes == nil {
-		patientWallet = PatientWallet{
-			OwnerID:       patientID,
-			HealthRecords: []HealthRecord{},
-			Consents:      []HealthRecordConsent{},
-		}
-	} else {
-		err = json.Unmarshal(walletBytes, &patientWallet)
-		if err != nil {
-			return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-		}
+
+	err = json.Unmarshal(walletBytes, &patientWallet)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 	}
 
 	newRecord := HealthRecord{

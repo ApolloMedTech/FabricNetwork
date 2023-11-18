@@ -1,4 +1,4 @@
-package chaincodes
+package chaincode_structs
 
 import "time"
 
