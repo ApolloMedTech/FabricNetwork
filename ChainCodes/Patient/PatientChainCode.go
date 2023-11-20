@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/ApolloMedTech/FabricNetwork/tree/master/ChainCodes/wallet"
 )
 
 type PatientChaincode struct {
@@ -40,7 +41,6 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
 
 	patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
 
-	// Update the patient wallet on the ledger
 	updatedWalletBytes, err := json.Marshal(patientWallet)
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
@@ -56,7 +56,7 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
 
 // GrantConsent grants consent to an organization to access the patient's data
 func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterface, organizationID string) error {
-	// Get the patient's identity (medical ID)
+	
 	patientID, err := ctx.GetClientIdentity().GetID()
 	if err != nil {
 		return fmt.Errorf("failed to get patient ID: %v", err)
