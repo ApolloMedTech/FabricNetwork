@@ -1,4 +1,4 @@
-package chaincode
+package patient
 
 import (
 	"crypto/sha256"

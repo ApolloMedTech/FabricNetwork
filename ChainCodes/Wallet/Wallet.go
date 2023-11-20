@@ -1,4 +1,4 @@
-package chaincode_structs
+package wallet
 
 import "time"
 
