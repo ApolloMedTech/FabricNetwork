@@ -55,7 +55,7 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
 }
 
 // GrantConsent grants consent to an organization to access the patient's data
-func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterface, organizationID string) error {
+func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterface, newConsent HealthRecordConsent) error {
 	
 	patientID, err := ctx.GetClientIdentity().GetID()
 	if err != nil {
@@ -79,10 +79,9 @@ func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterf
 		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 	}
 
-	// Grant consent to the organization
-	// patientWallet.ConsentMap[organizationID] = true
+	// Vamos adicionar um novo consentimento. 
+	patientWallet.Consents = append(patientWallet.Consents, newConsent)
 
-	// Update the patient wallet on the ledger
 	updatedWalletBytes, err := json.Marshal(patientWallet)
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
@@ -96,7 +95,7 @@ func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterf
 	return nil
 }
 
-// GetMedicalHistory retrieves the patient's medical history
+// Vamos obter todo o histórico do utente.
 func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface) (*PatientWallet, error) {
 
 	patientID, err := ctx.GetClientIdentity().GetID()
@@ -122,10 +121,10 @@ func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextI
 	return &patientWallet, nil
 }
 
-func GenerateUniqueID() string {
+func GenerateUniqueID(socialSecurityNumber string) string {
 	hasher := sha256.New()
 
-	hashInBytes := hasher.Sum(nil)
+	hashInBytes := hasher.Sum(socialSecurityNumber)
 	hashString := hex.EncodeToString(hashInBytes)
 
 	return hashString

@@ -17,10 +17,10 @@ type HealthRecord struct {
 }
 
 type HealthRecordConsent struct {
-	OwnerID        string
-	ConsentTypeID  int
-	OrganizationID int
-	userID         int
+	//OwnerID        string	`json:"ownerID"`
+	ConsentTypeID  int16      `json:"consentTypeID"` // View, Add.
+	OrganizationID int `json:"organizationID"`
+	userID         int `json:"userID"`
 	CreatedDate    time.Time `json:"createdDate"`
 	ExpirationDate time.Time `json:"expirationDate"`
 }
