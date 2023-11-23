@@ -14,48 +14,45 @@ type PatientChaincode struct {
 	contractapi.Contract
 }
 
-func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface, recordTypeID int, content string) error {
-
-	patientID, err := ctx.GetClientIdentity().GetID()
-	if err != nil {
-		return fmt.Errorf("failed to get patient ID: %v", err)
-	}
+func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface,
+													 recordTypeID int, content string) error {
 
 	walletBytes, err := ctx.GetStub().GetState(patientID)
-	if err != nil {
-		return fmt.Errorf("failed to read patient wallet: %v", err)
-	}
+    if err != nil {
+        return fmt.Errorf("failed to read patient wallet: %v", err)
+    }
 
-	var patientWallet PatientWallet
+    var patientWallet PatientWallet
 
-	err = json.Unmarshal(walletBytes, &patientWallet)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-	}
+    err = json.Unmarshal(walletBytes, &patientWallet)
+    if err != nil {
+        return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+    }
 
-	newRecord := HealthRecord{
-		RecordID:     GenerateUniqueID(),
-		RecordTypeID: recordTypeID,
-		Content:      content,
-	}
+    newRecord := HealthRecord{
+        RecordID:     GenerateUniqueID(),
+        RecordTypeID: recordTypeID,
+        Content:      content,
+    }
 
-	patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
+    patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
 
-	updatedWalletBytes, err := json.Marshal(patientWallet)
-	if err != nil {
-		return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
-	}
+    updatedWalletBytes, err := json.Marshal(patientWallet)
+    if err != nil {
+        return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
+    }
 
-	err = ctx.GetStub().PutState(patientID, updatedWalletBytes)
-	if err != nil {
-		return fmt.Errorf("failed to update patient wallet: %v", err)
-	}
+    err = ctx.GetStub().PutState(patientID, updatedWalletBytes)
+    if err != nil {
+        return fmt.Errorf("failed to update patient wallet: %v", err)
+    }
 
-	return nil
+    return nil
 }
 
-// GrantConsent grants consent to an organization to access the patient's data
-func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterface, newConsent HealthRecordConsent) error {
+// Método para conceder permissão a uma determinada entidade e utilizador.
+func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterface,
+													 newConsent HealthRecordConsent) error {
 	
 	patientID, err := ctx.GetClientIdentity().GetID()
 	if err != nil {
@@ -130,6 +127,7 @@ func GenerateUniqueID(socialSecurityNumber string) string {
 	return hashString
 }
 
+// Método de start quando o chaincode leva deploy.
 func main() {
 	chaincode, err := contractapi.NewChaincode(&PatientChaincode{})
 	if err != nil {
@@ -140,4 +138,6 @@ func main() {
 	if err := chaincode.Start(); err != nil {
 		fmt.Printf("Error starting PatientChaincode: %v", err)
 	}
+
+	fmt.Printf("Se chegou aqui então correu bem e fui lançado corretamente")
 }

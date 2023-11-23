@@ -25,7 +25,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Colocar em variáveis fora.
+// Colocar num ficheiro à parte, são configurações para encontrar o certificado.
+// Vamos manter simples por agora, por isso vamos utilizar a rede de testes.
 const (
 	mspID        = "Org1MSP"
 	cryptoPath   = "../../test-network/organizations/peerOrganizations/org1.example.com"
@@ -98,9 +99,14 @@ func getAllAssets(contract *client.Contract) {
 }
 
 // Submit a transaction synchronously, blocking until it has been committed to the ledger.
+// Relembro que estas chamadas só retornam quando a ledger é atualizada, isto é,
+// A transacção completou todo o circuito. 
 func createAsset(contract *client.Contract) {
 	fmt.Printf("\n--> Submit Transaction: CreateAsset, creates new asset with ID, Color, Size, Owner and AppraisedValue arguments \n")
 
+	// Quando queremos submeter uma transação para o chaincode fazemos desta forma.
+	// Colocar como 1º parametro o nome do método que vai ser chamado no chaincode.
+    // Sempre que vamos alterar a bockchain utilizamos o método SubmitTransaction.
 	_, err := contract.SubmitTransaction("CreateAsset", assetId, "yellow", "5", "Tom", "1300")
 	
 	if err != nil {
@@ -114,6 +120,9 @@ func createAsset(contract *client.Contract) {
 func readAssetByID(contract *client.Contract) {
 	fmt.Printf("\n--> Evaluate Transaction: ReadAsset, function returns asset attributes\n")
 
+	// No que diz respeito à parte de leitura de dados, isto é, obter dados da blockchain.
+	// Utilizamos o evaluateTransaction.
+	// O principio é o mesmo, colocamos o nome do método presente no chaincode e respetivos parametros.
 	evaluateResult, err := contract.EvaluateTransaction("ReadAsset", assetId)
 	if err != nil {
 		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
@@ -145,7 +154,7 @@ func transferAssetAsync(contract *client.Contract) {
 	fmt.Printf("*** Transaction committed successfully\n")
 }
 
-// Submit transaction, passing in the wrong number of arguments ,expected to throw an error containing details of any error responses from the smart contract.
+// Método que mostra as formas como podemos gerir os erros em caso de falhas de submissão de dados na blockchain.
 func exampleErrorHandling(contract *client.Contract) {
 	fmt.Println("\n--> Submit Transaction: UpdateAsset asset70, asset70 does not exist and should return an error")
 
