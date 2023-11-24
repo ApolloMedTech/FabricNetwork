@@ -29,7 +29,7 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
         return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
     }
 
-    newRecord := HealthRecord{
+    newRecord := HealthRecord {
         RecordID:     GenerateUniqueID(),
         RecordTypeID: recordTypeID,
         Content:      content,
@@ -93,7 +93,8 @@ func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterf
 }
 
 // Vamos obter todo o histórico do utente.
-func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface) (*PatientWallet, error) {
+func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface, 
+														patientID string) (*PatientWallet, error) {
 
 	patientID, err := ctx.GetClientIdentity().GetID()
 	if err != nil {
@@ -139,5 +140,5 @@ func main() {
 		fmt.Printf("Error starting PatientChaincode: %v", err)
 	}
 
-	fmt.Printf("Se chegou aqui então correu bem e fui lançado corretamente")
+	fmt.Printf("Se chegou aqui então correu bem e foi lançado corretamente.")
 }
