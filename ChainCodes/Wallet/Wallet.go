@@ -10,13 +10,6 @@ import "time"
 // 	// Consents      []HealthRecordConsent `json:"consents"`
 // }
 
-// type Mock struct {
-// 	OwnerID: string `json:"ownerID"`
-// 	Description: string `json:"description"`
-// }
-
-
-
 // type Allergy struct {
 
 // }

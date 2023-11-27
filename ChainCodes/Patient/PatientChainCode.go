@@ -5,89 +5,53 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/ApolloMedTech/FabricNetwork/tree/master/ChainCodes/wallet"
 )
 
 type PatientChaincode struct {
 	contractapi.Contract
 }
 
-type Mock struct {
-	OwnerID: string `json:"ownerID"`
-	Description: string `json:"description"`
+type HealthRecord struct {
+	Description string `json:"description"`
 }
 
 func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface,
-															 content string) error {
-
-	walletBytes, err := ctx.GetStub().GetState(patientID)
-    if err != nil {
-        return fmt.Errorf("failed to read patient wallet: %v", err)
-    }
-    
-    err = json.Unmarshal(walletBytes, &patientWallet)
-    if err != nil {
-        return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-    }
-
-    newRecord := HealthRecord {
-        RecordID:     GenerateUniqueID(),
-        RecordTypeID: recordTypeID,
-        Content:      content,
-    }
-
-    patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
-
-    updatedWalletBytes, err := json.Marshal(patientWallet)
-    if err != nil {
-        return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
-    }
-
-    err = ctx.GetStub().PutState(patientID, updatedWalletBytes)
-    if err != nil {
-        return fmt.Errorf("failed to update patient wallet: %v", err)
-    }
-
-    return nil
-}
-
-// Método para conceder permissão a uma determinada entidade e utilizador.
-func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterface,
-													 newConsent HealthRecordConsent) error {
+													 content string, socialSecurityNumber string) error {
 	
-	patientID, err := ctx.GetClientIdentity().GetID()
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecord", []string{"socialSecurityNumber", socialSecurityNumber})
 	if err != nil {
-		return fmt.Errorf("failed to get patient ID: %v", err)
+		return fmt.Errorf("failed to create composite key: %v", err)
 	}
 
-	// Retrieve existing patient wallet
-	walletBytes, err := ctx.GetStub().GetState(patientID)
+	walletBytes, err := ctx.GetStub().GetState(compositeKey)
 	if err != nil {
 		return fmt.Errorf("failed to read patient wallet: %v", err)
 	}
 
-	if walletBytes == nil {
-		return fmt.Errorf("patient wallet not found")
+	var patientWallet struct {
+		HealthRecords []HealthRecord `json:"healthRecords"`
 	}
 
-	var patientWallet PatientWallet
-
-	err = json.Unmarshal(walletBytes, &patientWallet)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+	if walletBytes != nil {
+		err = json.Unmarshal(walletBytes, &patientWallet)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+		}
 	}
 
-	// Vamos adicionar um novo consentimento. 
-	patientWallet.Consents = append(patientWallet.Consents, newConsent)
+	newRecord := HealthRecord {
+		Description: content,
+	}
+
+	patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
 
 	updatedWalletBytes, err := json.Marshal(patientWallet)
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
 	}
 
-	err = ctx.GetStub().PutState(patientID, updatedWalletBytes)
+	err = ctx.GetStub().PutState(compositeKey, updatedWalletBytes)
 	if err != nil {
 		return fmt.Errorf("failed to update patient wallet: %v", err)
 	}
@@ -96,15 +60,15 @@ func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterf
 }
 
 // Vamos obter todo o histórico do utente.
-func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface, 
-														socialSecurityNumber string) (*PatientWallet, error) {
-
-	patientID, err := ctx.GetClientIdentity().GetID()
+func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
+											 socialSecurityNumber string) (*PatientWallet, error) {
+	
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecord", []string{"socialSecurityNumber", socialSecurityNumber})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get patient ID: %v", err)
+		return nil, fmt.Errorf("failed to create composite key: %v", err)
 	}
 
-	walletBytes, err := ctx.GetStub().GetState(patientID)
+	walletBytes, err := ctx.GetStub().GetState(compositeKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read patient wallet: %v", err)
 	}
@@ -121,6 +85,7 @@ func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextI
 
 	return &patientWallet, nil
 }
+
 
 func GenerateUniqueID(socialSecurityNumber string) string {
 	hasher := sha256.New()
