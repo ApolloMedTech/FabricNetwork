@@ -14,16 +14,19 @@ type PatientChaincode struct {
 	contractapi.Contract
 }
 
+type Mock struct {
+	OwnerID: string `json:"ownerID"`
+	Description: string `json:"description"`
+}
+
 func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface,
-													 recordTypeID int, content string) error {
+															 content string) error {
 
 	walletBytes, err := ctx.GetStub().GetState(patientID)
     if err != nil {
         return fmt.Errorf("failed to read patient wallet: %v", err)
     }
-
-    var patientWallet PatientWallet
-
+    
     err = json.Unmarshal(walletBytes, &patientWallet)
     if err != nil {
         return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
@@ -94,7 +97,7 @@ func (c *PatientChaincode) GrantConsent(ctx contractapi.TransactionContextInterf
 
 // Vamos obter todo o histórico do utente.
 func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface, 
-														patientID string) (*PatientWallet, error) {
+														socialSecurityNumber string) (*PatientWallet, error) {
 
 	patientID, err := ctx.GetClientIdentity().GetID()
 	if err != nil {
@@ -140,5 +143,5 @@ func main() {
 		fmt.Printf("Error starting PatientChaincode: %v", err)
 	}
 
-	fmt.Printf("Se chegou aqui então correu bem e foi lançado corretamente.")
+	fmt.Printf("Se chegou aqui então correu bem e foi lançado corretamente")
 }
