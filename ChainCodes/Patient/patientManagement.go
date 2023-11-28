@@ -9,7 +9,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-type PatientChaincode struct {
+type Patient struct {
 	contractapi.Contract
 }
 
@@ -17,7 +17,7 @@ type HealthRecord struct {
 	Description string `json:"description"`
 }
 
-func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface,
+func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
 	content string, socialSecurityNumber string) error {
 
 	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecord", []string{"socialSecurityNumber", socialSecurityNumber})
@@ -61,7 +61,7 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
 }
 
 // Vamos obter todo o histórico do utente.
-func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
+func (c *Patient) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
 	socialSecurityNumber string) (*[]HealthRecord, error) {
 
 	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecord", []string{"socialSecurityNumber", socialSecurityNumber})
@@ -99,7 +99,7 @@ func GenerateUniqueID(socialSecurityNumber string) string {
 
 // Método de start quando o chaincode leva deploy.
 func main() {
-	chaincode, err := contractapi.NewChaincode(&PatientChaincode{})
+	chaincode, err := contractapi.NewChaincode(&Patient{})
 	if err != nil {
 		fmt.Printf("Error creating PatientChaincode: %v", err)
 		return
