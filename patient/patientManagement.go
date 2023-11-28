@@ -62,7 +62,7 @@ func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
 
 // Vamos obter todo o histórico do utente.
 func (c *Patient) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
-	socialSecurityNumber string) (*[]HealthRecord, error) {
+	socialSecurityNumber string) ([]HealthRecord, error) {
 
 	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecord", []string{"socialSecurityNumber", socialSecurityNumber})
 	if err != nil {
@@ -84,7 +84,7 @@ func (c *Patient) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
 		return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 	}
 
-	return &patientWallet, nil
+	return patientWallet, nil
 }
 
 func GenerateUniqueID(socialSecurityNumber string) string {
