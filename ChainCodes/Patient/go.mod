@@ -1,6 +1,6 @@
-module PatientChainCode.go
+module PatientManagement.go
 
-go 1.21.3
+go 1.17
 
 require github.com/hyperledger/fabric-contract-api-go v1.2.2
 
