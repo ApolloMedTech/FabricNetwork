@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -17,8 +18,8 @@ type HealthRecord struct {
 }
 
 func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInterface,
-													 content string, socialSecurityNumber string) error {
-	
+	content string, socialSecurityNumber string) error {
+
 	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecord", []string{"socialSecurityNumber", socialSecurityNumber})
 	if err != nil {
 		return fmt.Errorf("failed to create composite key: %v", err)
@@ -40,7 +41,7 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
 		}
 	}
 
-	newRecord := HealthRecord {
+	newRecord := HealthRecord{
 		Description: content,
 	}
 
@@ -61,8 +62,8 @@ func (c *PatientChaincode) AddDataToWallet(ctx contractapi.TransactionContextInt
 
 // Vamos obter todo o histórico do utente.
 func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
-											 socialSecurityNumber string) (*PatientWallet, error) {
-	
+	socialSecurityNumber string) (*[]HealthRecord, error) {
+
 	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecord", []string{"socialSecurityNumber", socialSecurityNumber})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create composite key: %v", err)
@@ -77,7 +78,7 @@ func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextI
 		return nil, fmt.Errorf("patient wallet not found")
 	}
 
-	var patientWallet PatientWallet
+	var patientWallet []HealthRecord
 	err = json.Unmarshal(walletBytes, &patientWallet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
@@ -86,12 +87,12 @@ func (c *PatientChaincode) GetMedicalHistory(ctx contractapi.TransactionContextI
 	return &patientWallet, nil
 }
 
-
 func GenerateUniqueID(socialSecurityNumber string) string {
 	hasher := sha256.New()
+	hasher.Write([]byte(socialSecurityNumber)) // Write the data into the hasher
+	hashInBytes := hasher.Sum(nil)             // Sum(nil) calculates the hash and returns bytes
 
-	hashInBytes := hasher.Sum(socialSecurityNumber)
-	hashString := hex.EncodeToString(hashInBytes)
+	hashString := hex.EncodeToString(hashInBytes) // Convert bytes to hexadecimal string
 
 	return hashString
 }
