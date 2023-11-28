@@ -5,6 +5,7 @@ go 1.17
 require github.com/hyperledger/fabric-contract-api-go v1.2.2
 
 require (
+	github.com/ApolloMedTech/FabricNetwork v0.0.0-20231128194007-fc8cc00becd8 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/spec v0.20.9 // indirect
