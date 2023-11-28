@@ -1,4 +1,4 @@
-module PatientManagement.go
+module github.com/ApolloMedTech/FabricNetwork/PatientManagement
 
 go 1.17
 
