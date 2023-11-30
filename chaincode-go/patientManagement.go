@@ -1,4 +1,4 @@
-package patient
+package main
 
 import (
 	"fmt"
