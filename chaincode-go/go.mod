@@ -1,4 +1,4 @@
-module github.com/ApolloMedTech/FabricNetwork/PatientManagement
+module github.com/ApolloMedTech/FabricNetwork/chaincode-go
 
 go 1.17
 

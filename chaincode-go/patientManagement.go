@@ -4,11 +4,13 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+
+	"github.com/ApolloMedTech/FabricNetwork/chaincode-go/chaincode"
 )
 
 // Método de start quando o chaincode leva deploy.
 func main() {
-	chaincode, err := contractapi.NewChaincode(&Patient{})
+	chaincode, err := contractapi.NewChaincode(&chaincode.Patient{})
 	if err != nil {
 		fmt.Printf("Error creating PatientChaincode: %v", err)
 		return
