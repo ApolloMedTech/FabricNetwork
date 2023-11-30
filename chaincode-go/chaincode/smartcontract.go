@@ -39,6 +39,9 @@ func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 		}
+	} else {
+		// Initialize the HealthRecords slice if the wallet is empty
+		patientWallet.HealthRecords = []HealthRecord{}
 	}
 
 	newRecord := HealthRecord{
@@ -78,13 +81,16 @@ func (c *Patient) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
 		return nil, fmt.Errorf("patient wallet not found")
 	}
 
-	var patientWallet []HealthRecord
+	var patientWallet struct {
+		HealthRecords []HealthRecord `json:"healthRecords"`
+	}
+
 	err = json.Unmarshal(walletBytes, &patientWallet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 	}
 
-	return patientWallet, nil
+	return patientWallet.HealthRecords, nil
 }
 
 func GenerateUniqueID(socialSecurityNumber string) string {
