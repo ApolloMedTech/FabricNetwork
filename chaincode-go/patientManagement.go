@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+
+	"github.com/ApolloMedTech/FabricNetwork/chaincode-go/chaincode"
 )
 
 // Método de start quando o chaincode leva deploy.
