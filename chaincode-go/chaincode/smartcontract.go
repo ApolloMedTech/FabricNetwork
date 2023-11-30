@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -14,7 +15,8 @@ type Patient struct {
 }
 
 type HealthRecord struct {
-	Description string `json:"description"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
 }
 
 func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
@@ -46,6 +48,7 @@ func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
 
 	newRecord := HealthRecord{
 		Description: content,
+		Date:        time.Now(),
 	}
 
 	patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
