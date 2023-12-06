@@ -19,15 +19,15 @@ type PatientWallet struct {
 }
 
 type HealthRecord struct {
-	Description string    `json:"description"`
-	CreatedDate time.Time `json:"createDate"`
-	Date        time.Time `json:"date"`
-	EntityName  string    `json:"entityName"`
-	RecordType  string    `json:"type"`
+	Description string `json:"description"`
+	CreatedDate int64  `json:"createDate"`
+	Date        int64  `json:"date"`
+	EntityName  string `json:"entityName"`
+	RecordType  string `json:"type"`
 }
 
 func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
-	content, socialSecurityNumber, entityName, recordType string, date time.Time) error {
+	content, socialSecurityNumber, entityName, recordType string, date int64) error {
 
 	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
 	if err != nil {
@@ -41,7 +41,7 @@ func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
 
 	newRecord := HealthRecord{
 		Description: content,
-		CreatedDate: time.Now(),
+		CreatedDate: time.Now().Unix(),
 		Date:        date,
 		EntityName:  entityName,
 		RecordType:  recordType,
@@ -49,7 +49,7 @@ func (c *Patient) AddDataToWallet(ctx contractapi.TransactionContextInterface,
 
 	patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
 
-	if err := updateWallet(ctx, patientWallet, compositeKey); err != nil {
+	if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
 		return fmt.Errorf("failed to update the wallet: %v", err)
 	}
 
@@ -103,8 +103,8 @@ func getCurrentPatientWallet(ctx contractapi.TransactionContextInterface,
 	return &patientWallet, nil
 }
 
-func updateWallet(ctx contractapi.TransactionContextInterface, patientWallet *PatientWallet, key string) error {
-	updatedWalletBytes, err := json.Marshal(&patientWallet)
+func updateWallet(ctx contractapi.TransactionContextInterface, patientWallet PatientWallet, key string) error {
+	updatedWalletBytes, err := json.Marshal(patientWallet)
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
 	}
