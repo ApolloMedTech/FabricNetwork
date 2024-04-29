@@ -95,14 +95,14 @@ func main() {
 
 	//createAsset(contract, "O Manuel partiu a unha do pé a fugir da bongo.", "29291230", "lol", "lol", 1000)
 	GetMedicalHistory(contract, "29291230")
-	//GetAccessControl(contract, "29291230")
+	GetAccessControl(contract, "29291230")
 
 	// Solicitar acesso aos dados do paciente
 	SendRequest(contract, "Hospital", "29291230")
 
 	// Respondendo a um pedido de acesso (por exemplo, aceitando o acesso)
 	// Suponha que haja um pedido de acesso pendente, então vamos responder a ele
-	RespondToAccessRequest(contract, 1, Accepted)
+	RespondToRequest(contract, 1, Accepted)
 }
 
 // Submit a transaction synchronously, blocking until it has been committed to the ledger.

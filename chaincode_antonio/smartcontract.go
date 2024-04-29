@@ -62,7 +62,7 @@ const (
 )
 
 // Enviar um pedido ao cliente
-func (hc *HealthcareContract) SendRequest(ctx contractapi.TransactionContextInterface,
+func (c *Patient) SendRequest(ctx contractapi.TransactionContextInterface,
 	organization, socialSecurityNumber string) error {
 	// Cria uma instancia de Request e adiciona à lista de de ID's de pedidos efetuados
 	request := Request{
@@ -82,7 +82,7 @@ func (hc *HealthcareContract) SendRequest(ctx contractapi.TransactionContextInte
 }
 
 // Função que permite o paciente aceitar ou negar o pedido de acesso aos seus dados
-func (hc *HealthcareContract) RespondToRequest(ctx contractapi.TransactionContextInterface,
+func (c *Patient) RespondToRequest(ctx contractapi.TransactionContextInterface,
 	requestID, response int, socialSecurityNumber string) error {
 	// Encontrar o pedido com o ID correspondente
 	var request *Request
@@ -136,7 +136,7 @@ func (hc *HealthcareContract) RespondToRequest(ctx contractapi.TransactionContex
 }
 
 // Adicionar um controle de acesso para o paciente
-func (hc *HealthcareContract) addAccessControl(ctx contractapi.TransactionContextInterface,
+func (c *Patient) addAccessControl(ctx contractapi.TransactionContextInterface,
 	content, socialSecurityNumber, entityName, recordType string, date int64) error {
 
 	compositeKey, err := createCompositeKey(ctx, "AccessControl", socialSecurityNumber)
@@ -166,7 +166,7 @@ func (hc *HealthcareContract) addAccessControl(ctx contractapi.TransactionContex
 	return nil
 }
 
-func (hc *HealthcareContract) GetAccessControl(ctx contractapi.TransactionContextInterface,
+func (c *Patient) GetAccessControl(ctx contractapi.TransactionContextInterface,
 	socialSecurityNumber string) ([]AccessControls, error) {
 
 	compositeKey, err := createCompositeKey(ctx, "AccessControl", socialSecurityNumber)
