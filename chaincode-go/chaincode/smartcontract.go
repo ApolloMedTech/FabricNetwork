@@ -77,32 +77,32 @@ func (c *HealthContract) RequestAccess(ctx contractapi.TransactionContextInterfa
 
 	// Cria uma instancia de Request e adiciona à lista de de ID's de pedidos efetuados
 	// Como tem o time lá dentro, vai ser sempre único.
-	request := Request{
-		RequestID:              generateUniqueID(socialSecurityNumber),
-		Description:            description,
-		Organization:           organization,
-		SocialSecurityNumber:   socialSecurityNumber,
-		Status:                 Pending,
-		HealthCareProfessional: healthCareProfessional,
-		StatusChangedDate:      time.Now().Unix(),
-		CreatedDate:            time.Now().Unix(),
-		ExpirationDate:         expirationDate,
-	}
+	// request := Request{
+	// 	RequestID:              generateUniqueID(socialSecurityNumber),
+	// 	Description:            description,
+	// 	Organization:           organization,
+	// 	SocialSecurityNumber:   socialSecurityNumber,
+	// 	Status:                 Pending,
+	// 	HealthCareProfessional: healthCareProfessional,
+	// 	StatusChangedDate:      time.Now().Unix(),
+	// 	CreatedDate:            time.Now().Unix(),
+	// 	ExpirationDate:         expirationDate,
+	// }
 
-	compositeKey, err := createCompositeKey(ctx, "Requests", socialSecurityNumber)
-	if err != nil {
-		return fmt.Errorf("failed to create composite key: %v", err)
-	}
+	// compositeKey, err := createCompositeKey(ctx, "Requests", socialSecurityNumber)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to create composite key: %v", err)
+	// }
 
-	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-	}
-	patientWallet.Requests = append(patientWallet.Requests, request)
+	// patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+	// }
+	// patientWallet.Requests = append(patientWallet.Requests, request)
 
-	if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
-		return fmt.Errorf("failed to update the wallet: %v", err)
-	}
+	// if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
+	// 	return fmt.Errorf("failed to update the wallet: %v", err)
+	// }
 
 	return nil
 }
