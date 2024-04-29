@@ -26,10 +26,6 @@ type HealthRecord struct {
 	RecordType  string `json:"type"`
 }
 
-type AccessControls struct {
-	AccessControls []AccessControl `json:"accessControls"`
-}
-
 type AccessControl struct {
 	Description string `json:"description"`
 	CreatedDate int64  `json:"createDate"`
@@ -45,14 +41,14 @@ type HealthcareContract struct {
 	Requests []Request `json:"requests"` // Lista de ID's dos pedidos efetuados
 }
 
-// Estrutura de Request (não sei como deveria estar a organização)
+// Estrutura de Request
 type Request struct {
 	Organization         string
 	SocialSecurityNumber string
 	Status               Status
 }
 
-// Estrutura que define o estado do pedido, começa por estar pendente, depois é aceite o negado.
+// Estrutura que define o estado do pedido
 type Status int
 
 const (
@@ -63,7 +59,7 @@ const (
 
 // Enviar um pedido ao cliente
 func (c *Patient) SendRequest(ctx contractapi.TransactionContextInterface,
-	organization, socialSecurityNumber string) error {
+	organization, socialSecurityNumber string, hc *HealthcareContract) error {
 	// Cria uma instancia de Request e adiciona à lista de de ID's de pedidos efetuados
 	request := Request{
 		Organization:         organization,
@@ -73,7 +69,7 @@ func (c *Patient) SendRequest(ctx contractapi.TransactionContextInterface,
 	hc.Requests = append(hc.Requests, request)
 
 	// Adicionar acessos à carteira do paciente quando o pedido é enviado
-	err := hc.addAccessControl(ctx, "Content", socialSecurityNumber, "EntityName", "RecordType", time.Now().Unix())
+	err := c.addAccessControl(ctx, "Content", socialSecurityNumber, "EntityName", "RecordType", time.Now().Unix(), len(hc.Requests)-1)
 	if err != nil {
 		return fmt.Errorf("failed to send an access request to %s: %v", socialSecurityNumber, err)
 	}
@@ -83,41 +79,52 @@ func (c *Patient) SendRequest(ctx contractapi.TransactionContextInterface,
 
 // Função que permite o paciente aceitar ou negar o pedido de acesso aos seus dados
 func (c *Patient) RespondToRequest(ctx contractapi.TransactionContextInterface,
-	requestID, response int, socialSecurityNumber string) error {
+	requestID int, response Status, socialSecurityNumber string) error {
 	// Encontrar o pedido com o ID correspondente
 	var request *Request
-	for i := range hc.Requests {
-		if i == requestID {
-			request = &hc.Requests[i]
-			break
-		}
+	hcKey := GenerateUniqueID(socialSecurityNumber)
+	hcBytes, err := ctx.GetStub().GetState(hcKey)
+	if err != nil {
+		return fmt.Errorf("failed to read healthcare contract: %v", err)
 	}
 
-	if request == nil {
-		return fmt.Errorf("request not found")
+	if hcBytes == nil {
+		return fmt.Errorf("healthcare contract not found for patient with social security number %s", socialSecurityNumber)
 	}
+
+	var hc HealthcareContract
+	if err := json.Unmarshal(hcBytes, &hc); err != nil {
+		return fmt.Errorf("failed to unmarshal healthcare contract: %v", err)
+	}
+
+	if requestID >= len(hc.Requests) || requestID < 0 {
+		return fmt.Errorf("invalid request ID: %d", requestID)
+	}
+
+	request = &hc.Requests[requestID]
+
 	// Iterar sobre os acessos associados a este pedido
-	accessControls, err := hc.getAccessControl(ctx, socialSecurityNumber)
+	accessControls, err := c.GetAccessControl(ctx, socialSecurityNumber)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve patient's access controls: %v", err)
 	}
 
 	// Verificar se a lista de acessos está vazia antes de iterar sobre ela
-	if len(accessControls.AccessControls) == 0 {
+	if len(accessControls) == 0 {
 		return fmt.Errorf("access controls list is empty")
 	}
 
 	// Atualizar o estado dos acessos associados ao pedido
-	for i, accessControl := range accessControls.AccessControls {
+	for i, accessControl := range accessControls {
 		if accessControl.RequestID == requestID {
-			accessControl.Status = Status(response)
-			accessControls.AccessControls[i] = accessControl
+			accessControl.Status = response
+			accessControls[i] = accessControl
 			break
 		}
 	}
 
 	// Atualizar os acessos
-	if err := hc.updateAccessControl(ctx, *accessControls, socialSecurityNumber); err != nil {
+	if err := c.updateAccessControl(ctx, accessControls, socialSecurityNumber); err != nil {
 		return fmt.Errorf("failed to update patient's access controls: %v", err)
 	}
 
@@ -130,14 +137,24 @@ func (c *Patient) RespondToRequest(ctx contractapi.TransactionContextInterface,
 	}
 
 	// Volta a dar update ao estado do pedido de acesso
-	request.Status = Status(response)
+	request.Status = response
+
+	// Atualizar o contrato de saúde na blockchain
+	hcBytes, err = json.Marshal(hc)
+	if err != nil {
+		return fmt.Errorf("failed to marshal updated healthcare contract: %v", err)
+	}
+
+	if err := ctx.GetStub().PutState(hcKey, hcBytes); err != nil {
+		return fmt.Errorf("failed to update healthcare contract: %v", err)
+	}
 
 	return nil
 }
 
 // Adicionar um controle de acesso para o paciente
 func (c *Patient) addAccessControl(ctx contractapi.TransactionContextInterface,
-	content, socialSecurityNumber, entityName, recordType string, date int64) error {
+	content, socialSecurityNumber, entityName, recordType string, date int64, requestID int) error {
 
 	compositeKey, err := createCompositeKey(ctx, "AccessControl", socialSecurityNumber)
 	if err != nil {
@@ -150,16 +167,14 @@ func (c *Patient) addAccessControl(ctx contractapi.TransactionContextInterface,
 		Date:        date,
 		EntityName:  entityName,
 		RecordType:  recordType,
-		RequestID:   len(hc.Requests) - 1, // Assume que o ID do pedido é o índice do último pedido adicionado
+		RequestID:   requestID,
 		Status:      Pending,
 	}
 
-	accessControls := AccessControls{
-		AccessControls: []AccessControl{accessControl},
-	}
+	accessControls := []AccessControl{accessControl}
 
 	// Atualizar a lista de acessos associada à chave específica na blockchain
-	if err := updateAccessControl(ctx, accessControls, compositeKey); err != nil {
+	if err := c.updateAccessControl(ctx, accessControls, compositeKey); err != nil {
 		return fmt.Errorf("failed to update the wallet: %v", err)
 	}
 
@@ -167,20 +182,23 @@ func (c *Patient) addAccessControl(ctx contractapi.TransactionContextInterface,
 }
 
 func (c *Patient) GetAccessControl(ctx contractapi.TransactionContextInterface,
-	socialSecurityNumber string) ([]AccessControls, error) {
+	socialSecurityNumber string) ([]AccessControl, error) {
 
 	compositeKey, err := createCompositeKey(ctx, "AccessControl", socialSecurityNumber)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create composite key: %v", err)
 	}
 
-	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+	accessControlsBytes, err := ctx.GetStub().GetState(compositeKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+		return nil, fmt.Errorf("failed to read access controls: %v", err)
 	}
 
-	accessControls := &AccessControls{
-		AccessControls: patientWallet.AccessControls,
+	var accessControls []AccessControl
+	if accessControlsBytes != nil {
+		if err := json.Unmarshal(accessControlsBytes, &accessControls); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal access controls: %v", err)
+		}
 	}
 
 	return accessControls, nil
@@ -205,8 +223,8 @@ func (c *Patient) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
 
 // update de uma entrada da lista de acessos
 // Atualiza a lista de acessos associada à chave especifíca na blockchain
-func updateAccessControl(ctx contractapi.TransactionContextInterface,
-	accessControls AccessControls, key string) error {
+func (c *Patient) updateAccessControl(ctx contractapi.TransactionContextInterface,
+	accessControls []AccessControl, key string) error {
 	accessControlsBytes, err := json.Marshal(accessControls)
 	if err != nil {
 		return fmt.Errorf("failed to marshal access controls: %v", err)

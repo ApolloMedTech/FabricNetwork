@@ -94,15 +94,15 @@ func main() {
 	contract := network.GetContract(chaincodeName)
 
 	//createAsset(contract, "O Manuel partiu a unha do pé a fugir da bongo.", "29291230", "lol", "lol", 1000)
-	GetMedicalHistory(contract, "29291230")
-	GetAccessControl(contract, "29291230")
+	//GetMedicalHistory(contract, "29291230")
+	//GetAccessControl(contract, "29291230")
 
 	// Solicitar acesso aos dados do paciente
 	SendRequest(contract, "Hospital", "29291230")
 
 	// Respondendo a um pedido de acesso (por exemplo, aceitando o acesso)
 	// Suponha que haja um pedido de acesso pendente, então vamos responder a ele
-	RespondToRequest(contract, 1, Accepted)
+	RespondToAccessRequest(contract, 1, Accepted)
 }
 
 // Submit a transaction synchronously, blocking until it has been committed to the ledger.
@@ -166,39 +166,31 @@ func GetAccessControl(contract *client.Contract, socialSecurityNumber string) {
 	}
 }
 
-// Enviar uma transação para solicitar acesso aos dados de um paciente
 func SendRequest(contract *client.Contract, organization, socialSecurityNumber string) {
-	fmt.Printf("\n--> Submeter Transação: Solicitar acesso aos dados de um paciente.\n")
+	fmt.Printf("\n--> Submit Transaction: Sending access request to patient data.\n")
 
-	// Submeter uma transação para o chaincode
 	_, err := contract.SubmitTransaction("SendRequest", organization, socialSecurityNumber)
 	if err != nil {
-		panic(fmt.Errorf("falha ao submeter a transação: %w", err))
+		panic(fmt.Errorf("failed to submit transaction: %w", err))
 	}
 
-	fmt.Printf("*** Transação submetida com sucesso\n")
+	fmt.Printf("*** Transaction submitted successfully\n")
 }
 
-// Responder a um pedido de acesso aos dados do paciente
-func RespondToRequest(contract *client.Contract, requestID int, response Status) {
-	fmt.Printf("\n--> Submeter Transação: Responder a um pedido de acesso aos dados do paciente.\n")
+func RespondToAccessRequest(contract *client.Contract, requestID int, response Status) {
+	fmt.Printf("\n--> Submit Transaction: Responding to access request to patient data.\n")
 
-	// Converter o requestID para uma string
 	requestIDString := strconv.Itoa(requestID)
-
-	// Converter o valor de Status para uma string
 	responseString := statusToString(response)
 
-	// Submeter uma transação para o chaincode
 	_, err := contract.SubmitTransaction("RespondToRequest", requestIDString, responseString)
 	if err != nil {
-		panic(fmt.Errorf("falha ao submeter a transação: %w", err))
+		panic(fmt.Errorf("failed to submit transaction: %w", err))
 	}
 
-	fmt.Printf("*** Transação submetida com sucesso\n")
+	fmt.Printf("*** Transaction submitted successfully\n")
 }
 
-// Converte um valor de Status para uma string correspondente
 func statusToString(status Status) string {
 	switch status {
 	case Pending:
