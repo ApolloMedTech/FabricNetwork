@@ -77,32 +77,32 @@ func (c *HealthContract) RequestAccess(ctx contractapi.TransactionContextInterfa
 
 	// Cria uma instancia de Request e adiciona à lista de de ID's de pedidos efetuados
 	// Como tem o time lá dentro, vai ser sempre único.
-	// request := Request{
-	// 	RequestID:              generateUniqueID(socialSecurityNumber),
-	// 	Description:            description,
-	// 	Organization:           organization,
-	// 	SocialSecurityNumber:   socialSecurityNumber,
-	// 	Status:                 Pending,
-	// 	HealthCareProfessional: healthCareProfessional,
-	// 	StatusChangedDate:      time.Now().Unix(),
-	// 	CreatedDate:            time.Now().Unix(),
-	// 	ExpirationDate:         expirationDate,
-	// }
+	request := Request{
+		RequestID:              generateUniqueID(socialSecurityNumber),
+		Description:            description,
+		Organization:           organization,
+		SocialSecurityNumber:   socialSecurityNumber,
+		Status:                 Pending,
+		HealthCareProfessional: healthCareProfessional,
+		StatusChangedDate:      time.Now().Unix(),
+		CreatedDate:            time.Now().Unix(),
+		ExpirationDate:         expirationDate,
+	}
 
-	// compositeKey, err := createCompositeKey(ctx, "Requests", socialSecurityNumber)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to create composite key: %v", err)
-	// }
+	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
+	if err != nil {
+		return fmt.Errorf("failed to create composite key: %v", err)
+	}
 
-	// patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-	// }
-	// patientWallet.Requests = append(patientWallet.Requests, request)
+	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+	}
+	patientWallet.Requests = append(patientWallet.Requests, request)
 
-	// if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
-	// 	return fmt.Errorf("failed to update the wallet: %v", err)
-	// }
+	if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
+		return fmt.Errorf("failed to update the wallet: %v", err)
+	}
 
 	return nil
 }
@@ -110,7 +110,7 @@ func (c *HealthContract) RequestAccess(ctx contractapi.TransactionContextInterfa
 func (c *HealthContract) AddDataToWallet(ctx contractapi.TransactionContextInterface,
 	content, healthCareProfessional, socialSecurityNumber, organization, recordType string, date int64) error {
 
-	compositeKey, err := createCompositeKey(ctx, "HealthRecord", socialSecurityNumber)
+	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
 	if err != nil {
 		return fmt.Errorf("failed to create composite key: %v", err)
 	}
@@ -147,7 +147,7 @@ func (c *HealthContract) AddDataToWallet(ctx contractapi.TransactionContextInter
 func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
 	organization, healthcareProfessional, socialSecurityNumber string) ([]HealthRecord, error) {
 
-	compositeKey, err := createCompositeKey(ctx, "HealthRecord", socialSecurityNumber)
+	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create composite key: %v", err)
 	}
@@ -172,14 +172,14 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 
 	// Colocar os erros de parametros 1.o não vale a pena ir à blockchain quando os campos nem válidos estão.
 	if requestID == "" {
-		return fmt.Errorf("invalid request ID: %d", requestID)
+		return fmt.Errorf("invalid request ID: %s", requestID)
 	}
 
 	if socialSecurityNumber == "" {
 		return fmt.Errorf("social security number cannot be empty")
 	}
 
-	compositeKey, err := createCompositeKey(ctx, "Requests", socialSecurityNumber)
+	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
 	if err != nil {
 		return fmt.Errorf("failed to create composite key: %v", err)
 	}
@@ -193,7 +193,7 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 	targetRequest := findPendingRequest(patientWallet, requestID)
 
 	if targetRequest == nil {
-		return fmt.Errorf("Não existe nenhum pedido para atualizar, requestID: %s ", requestID)
+		return fmt.Errorf("não existe nenhum pedido para atualizar, requestID: %s ", requestID)
 	}
 
 	if response == Denied {
@@ -233,9 +233,9 @@ func findPendingRequest(patientWallet *PatientWallet, requestID string) *Request
 	return targetRequest
 }
 
-func hasPermission(userPermission, requiredPermission int) bool {
-	return userPermission&requiredPermission != 0
-}
+// func hasPermission(userPermission, requiredPermission int) bool {
+// 	return userPermission&requiredPermission != 0
+// }
 
 func checkIfHealthcareProfessionalHaveAccess(patientWallet PatientWallet,
 	organization, healthcareProfessional string) error {
@@ -248,11 +248,11 @@ func checkIfHealthcareProfessionalHaveAccess(patientWallet PatientWallet,
 			}
 		}
 	}
-	return fmt.Errorf("No access found for organization: %s and healthcare professional: %s", organization, healthcareProfessional)
+	return fmt.Errorf("no access found for organization: %s and healthcare professional: %s", organization, healthcareProfessional)
 }
 
-func createCompositeKey(ctx contractapi.TransactionContextInterface, schema, key string) (string, error) {
-	compositeKey, err := ctx.GetStub().CreateCompositeKey(schema, []string{"socialSecurityNumber", key})
+func createCompositeKey(ctx contractapi.TransactionContextInterface, key string) (string, error) {
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("PatientWallet", []string{"socialSecurityNumber", key})
 	if err != nil {
 		return "", fmt.Errorf("failed to create composite key: %v", err)
 	}
