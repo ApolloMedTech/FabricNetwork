@@ -93,7 +93,7 @@ func main() {
 	network := gw.GetNetwork(channelName)
 	contract := network.GetContract(chaincodeName)
 
-	//createAsset(contract, "O Manuel partiu a unha do pé a fugir da bongo.", "29291230", "lol", "lol", 1000)
+	//AddPatientMedicalRecord(contract, "O Manuel partiu a unha do pé a fugir da bongo.", "29291230", "lol", "lol", 1000)
 	//GetMedicalHistory(contract, "29291230")
 	//GetAccessControl(contract, "29291230")
 
@@ -108,7 +108,7 @@ func main() {
 // Submit a transaction synchronously, blocking until it has been committed to the ledger.
 // Relembro que estas chamadas só retornam quando a ledger é atualizada, isto é,
 // A transacção completou todo o circuito.
-func createAsset(contract *client.Contract, content, socialSecurityNumber, entityName, recordType string, date int64) {
+func AddPatientMedicalRecord(contract *client.Contract, content, socialSecurityNumber, entityName, recordType string, date int64) {
 	fmt.Printf("\n--> Submit Transaction: Criar uma linha na blockchain com dados médicos. \n")
 
 	// Quando queremos submeter uma transação para o chaincode fazemos desta forma.
@@ -116,7 +116,7 @@ func createAsset(contract *client.Contract, content, socialSecurityNumber, entit
 	// Sempre que vamos alterar a bockchain utilizamos o método SubmitTransaction.
 	dateString := int64ToString(date)
 
-	_, err := contract.SubmitTransaction("AddDataToWallet", content, socialSecurityNumber, entityName, recordType, dateString)
+	_, err := contract.SubmitTransaction("AddPatientMedicalRecord", content, socialSecurityNumber, entityName, recordType, dateString)
 
 	if err != nil {
 		panic(fmt.Errorf("failed to submit transaction: %w", err))

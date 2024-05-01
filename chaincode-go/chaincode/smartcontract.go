@@ -65,9 +65,9 @@ const (
 
 	Para isto vamos precisar:
 	 - Método para ser possível o médico efetuar um pedido.  [X]
-	 - Método para aprovar/rejeitar por parte do paciente. []
-	 - Método para obter o pedido ao qual pretendemos aprovar/rejeitar. []
-	 - Método para obter os dados médicos do paciente MAS apenas se existir uma autorização. []
+	 - Método para aprovar/rejeitar por parte do paciente. [X]
+	 - Método para obter o pedido ao qual pretendemos aprovar/rejeitar. [X]
+	 - Método para obter os dados médicos do paciente MAS apenas se existir uma autorização. [X]
 */
 
 // Enviar um pedido ao cliente
@@ -78,7 +78,7 @@ func (c *HealthContract) RequestAccess(ctx contractapi.TransactionContextInterfa
 	// Cria uma instancia de Request e adiciona à lista de de ID's de pedidos efetuados
 	// Como tem o time lá dentro, vai ser sempre único.
 	request := Request{
-		RequestID:              generateUniqueID(socialSecurityNumber),
+		RequestID:              generateUniqueID(socialSecurityNumber, description),
 		Description:            description,
 		Organization:           organization,
 		SocialSecurityNumber:   socialSecurityNumber,
@@ -107,7 +107,7 @@ func (c *HealthContract) RequestAccess(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
-func (c *HealthContract) AddDataToWallet(ctx contractapi.TransactionContextInterface,
+func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionContextInterface,
 	content, healthCareProfessional, socialSecurityNumber, organization, recordType string, date int64) error {
 
 	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
@@ -117,7 +117,7 @@ func (c *HealthContract) AddDataToWallet(ctx contractapi.TransactionContextInter
 
 	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+		return fmt.Errorf("failed to get patient wallet: %v", err)
 	}
 
 	err = checkIfHealthcareProfessionalHaveAccess(*patientWallet, organization, healthCareProfessional)
@@ -147,23 +147,32 @@ func (c *HealthContract) AddDataToWallet(ctx contractapi.TransactionContextInter
 func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
 	organization, healthcareProfessional, socialSecurityNumber string) ([]HealthRecord, error) {
 
-	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create composite key: %v", err)
-	}
-
-	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-	}
-
-	err = checkIfHealthcareProfessionalHaveAccess(*patientWallet, organization, healthcareProfessional)
+	patientWallet, err := getPatientWalletWithAuthorizationVerification(ctx,
+		organization,
+		healthcareProfessional,
+		socialSecurityNumber)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return patientWallet.HealthRecords, nil
+}
+
+// Vamos obter todos os pedidos efetuados ao paciente.
+func (c *HealthContract) GetRequests(ctx contractapi.TransactionContextInterface,
+	organization, healthcareProfessional, socialSecurityNumber string) ([]Request, error) {
+
+	patientWallet, err := getPatientWalletWithAuthorizationVerification(ctx,
+		organization,
+		healthcareProfessional,
+		socialSecurityNumber)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return patientWallet.Requests, nil
 }
 
 // Função que permite o paciente aceitar ou negar o pedido de acesso aos seus dados
@@ -218,6 +227,28 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
+func getPatientWalletWithAuthorizationVerification(ctx contractapi.TransactionContextInterface,
+	organization, healthcareProfessional, socialSecurityNumber string) (*PatientWallet, error) {
+
+	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create composite key: %v", err)
+	}
+
+	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+	}
+
+	err = checkIfHealthcareProfessionalHaveAccess(*patientWallet, organization, healthcareProfessional)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return patientWallet, nil
+}
+
 func findPendingRequest(patientWallet *PatientWallet, requestID string) *Request {
 	var targetRequest *Request
 
@@ -232,10 +263,6 @@ func findPendingRequest(patientWallet *PatientWallet, requestID string) *Request
 
 	return targetRequest
 }
-
-// func hasPermission(userPermission, requiredPermission int) bool {
-// 	return userPermission&requiredPermission != 0
-// }
 
 func checkIfHealthcareProfessionalHaveAccess(patientWallet PatientWallet,
 	organization, healthcareProfessional string) error {
@@ -295,16 +322,13 @@ func updateWallet(ctx contractapi.TransactionContextInterface, patientWallet Pat
 	return nil
 }
 
-func generateUniqueID(socialSecurityNumber string) string {
-	// Add current timestamp to the input
-	input := socialSecurityNumber + time.Now().String()
+func generateUniqueID(socialSecurityNumber, description string) string {
+	input := socialSecurityNumber + description
 
-	// Hash the combined input
 	hasher := sha256.New()
 	hasher.Write([]byte(input))
 	hashInBytes := hasher.Sum(nil)
 
-	// Convert hash to hexadecimal string
 	hashString := hex.EncodeToString(hashInBytes)
 
 	return hashString
