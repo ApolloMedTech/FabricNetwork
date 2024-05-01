@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/ApolloMedTech/FabricNetwork/chaincode-go/chaincode"
+	// "github.com/ApolloMedTech/FabricNetwork/chaincode-go/chaincode"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"patientManagement.go/chaincode"
 )
 
 // Método de start quando o chaincode leva deploy.
