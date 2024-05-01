@@ -143,6 +143,19 @@ func GetMedicalHistory(contract *client.Contract, socialSecurityNumber string) {
 }
 
 // Evaluate a transaction to query ledger state.
+func GetRequests(contract *client.Contract, socialSecurityNumber string) {
+	fmt.Println("\n--> Evaluate Transaction: Vamos obter os pedidos mediante um NISS")
+
+	evaluateResult, err := contract.EvaluateTransaction("GetRequests", socialSecurityNumber)
+	if err != nil {
+		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
+	}
+	result := formatJSON(evaluateResult)
+
+	fmt.Printf("*** Result:%s\n", result)
+}
+
+// Evaluate a transaction to query ledger state.
 // Evaluate a transaction to query ledger state for patient access controls.
 func GetAccessControl(contract *client.Contract, socialSecurityNumber string) {
 	fmt.Println("\n--> Avaliar Transação: Obtendo controles de acesso para um paciente")

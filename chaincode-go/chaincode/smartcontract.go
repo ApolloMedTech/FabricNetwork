@@ -161,15 +161,16 @@ func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInt
 
 // Vamos obter todos os pedidos efetuados ao paciente.
 func (c *HealthContract) GetRequests(ctx contractapi.TransactionContextInterface,
-	organization, healthcareProfessional, socialSecurityNumber string) ([]Request, error) {
+	socialSecurityNumber string) ([]Request, error) {
 
-	patientWallet, err := getPatientWalletWithAuthorizationVerification(ctx,
-		organization,
-		healthcareProfessional,
-		socialSecurityNumber)
-
+	compositeKey, err := createCompositeKey(ctx, socialSecurityNumber)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create composite key: %v", err)
+	}
+
+	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 	}
 
 	return patientWallet.Requests, nil
