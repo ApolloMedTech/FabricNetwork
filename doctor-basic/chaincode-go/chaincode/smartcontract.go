@@ -30,7 +30,6 @@ type HealthRecord struct {
 type Request struct {
 	RequestID                string `json:"requestID"`
 	Description              string `json:"description"`
-	Organization             string `json:"organization"`
 	HealthCareProfessionalID string `json:"healthcareProfessionalID"`
 	HealthCareProfessional   string `json:"healthcareProfessional"`
 	PatientID                string `json:"patientID"`
@@ -43,17 +42,15 @@ type Access struct {
 	RequestID                string `json:"requestID"`
 	PatientID                string `json:"patientID"`
 	HealthcareProfessionalID string `json:"healthcareProfessionalID"`
-	Organization             string `json:"organization"`
 	CreatedDate              int64  `json:"createdDate"`
 	ExpirationDate           int64  `json:"expirationDate"`
 }
 
 // Vamos obter todo o histórico do utente.
 func (c *DoctorContract) GetPatientMedicalHistory(ctx contractapi.TransactionContextInterface,
-	patientID, healthcareProfessionalID, organization string) ([]HealthRecord, error) {
+	patientID, healthcareProfessionalID string) ([]HealthRecord, error) {
 
 	err := checkAuthorizationVerification(ctx,
-		organization,
 		healthcareProfessionalID,
 		patientID)
 
@@ -79,7 +76,7 @@ func (c *DoctorContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 
 // Enviar um pedido ao cliente
 func (c *DoctorContract) RequestPatientMedicalData(ctx contractapi.TransactionContextInterface,
-	patientID, description, organization, healthCareProfessionalID string,
+	patientID, description, healthCareProfessionalID string,
 	healthCareProfessional string) error {
 
 	// Cria uma instancia de Request e adiciona à lista de de ID's de pedidos efetuados
@@ -87,7 +84,6 @@ func (c *DoctorContract) RequestPatientMedicalData(ctx contractapi.TransactionCo
 	request := Request{
 		RequestID:                generateUniqueID(patientID, description),
 		Description:              description,
-		Organization:             organization,
 		PatientID:                patientID,
 		Status:                   0,
 		HealthCareProfessionalID: healthCareProfessionalID,
@@ -118,7 +114,7 @@ func (c *DoctorContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 	}
 
-	err = checkIfHealthcareProfessionalHaveAccess(*acesses, organization, healthCareProfessionalID)
+	err = checkIfHealthcareProfessionalHaveAccess(*acesses, healthCareProfessionalID)
 
 	if err != nil {
 		return err
@@ -158,13 +154,12 @@ func (c *DoctorContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 }
 
 // Vamos obter todos os pedidos efetuados ao paciente.
-func (c *DoctorContract) GetRequests(ctx contractapi.TransactionContextInterface, healthCareProfessionalID, organization string) ([]Request, error) {
+func (c *DoctorContract) GetRequests(ctx contractapi.TransactionContextInterface, healthCareProfessionalID string) ([]Request, error) {
 	queryString := fmt.Sprintf(`{
         "selector": {
-            "healthCareProfessionalID": "%s",
-            "organization": "%s"
+            "healthCareProfessionalID": "%s"
         }
-    }`, healthCareProfessionalID, organization)
+    }`, healthCareProfessionalID)
 
 	// Execute the query
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
@@ -219,7 +214,7 @@ func storeRequest(ctx contractapi.TransactionContextInterface, request Request) 
 }
 
 func checkAuthorizationVerification(ctx contractapi.TransactionContextInterface,
-	organization, healthcareProfessionalID, patientID string) error {
+	healthcareProfessionalID, patientID string) error {
 
 	compositeKey, err := createCompositeKey(ctx, patientID)
 	if err != nil {
@@ -231,7 +226,7 @@ func checkAuthorizationVerification(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
 	}
 
-	err = checkIfHealthcareProfessionalHaveAccess(*acesses, organization, healthcareProfessionalID)
+	err = checkIfHealthcareProfessionalHaveAccess(*acesses, healthcareProfessionalID)
 
 	if err != nil {
 		return err
@@ -240,15 +235,14 @@ func checkAuthorizationVerification(ctx contractapi.TransactionContextInterface,
 	return nil
 }
 
-func checkIfHealthcareProfessionalHaveAccess(accesses []Access, organization, healthcareProfessionalID string) error {
+func checkIfHealthcareProfessionalHaveAccess(accesses []Access, healthcareProfessionalID string) error {
 	for _, access := range accesses {
-		if access.Organization == organization &&
-			access.HealthcareProfessionalID == healthcareProfessionalID &&
+		if access.HealthcareProfessionalID == healthcareProfessionalID &&
 			access.ExpirationDate <= time.Now().Unix() { // Inverter o sinal quando tivermos em PRD.
 			return nil
 		}
 	}
-	return fmt.Errorf("no access found for organization: %s and healthcare professional: %s", organization, healthcareProfessionalID)
+	return fmt.Errorf("no access found for healthcare professional: %s", healthcareProfessionalID)
 }
 
 func createCompositeKey(ctx contractapi.TransactionContextInterface, key string) (string, error) {
