@@ -2,8 +2,6 @@ package chaincode
 
 // patient contract.
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -11,7 +9,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-type HealthContract struct {
+type PatientContract struct {
 	contractapi.Contract
 }
 
@@ -48,28 +46,8 @@ type Access struct {
 	ExpirationDate           int64  `json:"expirationDate"`
 }
 
-// Vamos obter todo o histórico do utente.
-func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionContextInterface,
-	patientID, healthcareProfessionalID, organization string) ([]HealthRecord, error) {
-
-	healthRecordsKey := fmt.Sprintf("healthRecords_%s", patientID)
-	existingRecordsBytes, err := ctx.GetStub().GetState(healthRecordsKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read existing health records: %v", err)
-	}
-
-	var existingRecords []HealthRecord
-	if existingRecordsBytes != nil {
-		if err := json.Unmarshal(existingRecordsBytes, &existingRecords); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal existing health records: %v", err)
-		}
-	}
-
-	return existingRecords, nil
-}
-
 // Vamos obter todos os pedidos efetuados ao paciente.
-func (c *HealthContract) GetRequests(ctx contractapi.TransactionContextInterface, patientID string) ([]Request, error) {
+func (c *PatientContract) GetRequests(ctx contractapi.TransactionContextInterface, patientID string) ([]Request, error) {
 	queryString := fmt.Sprintf(`{
         "selector": {
             "patientID": "%s"
@@ -107,7 +85,7 @@ func (c *HealthContract) GetRequests(ctx contractapi.TransactionContextInterface
 }
 
 // Função que permite o paciente aceitar ou negar o pedido de acesso aos seus dados
-func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterface,
+func (c *PatientContract) AnswerRequest(ctx contractapi.TransactionContextInterface,
 	response int, requestID, patientID string) error {
 
 	// Colocar os erros de parametros 1.o não vale a pena ir à blockchain quando os campos nem válidos estão.
@@ -117,11 +95,6 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 
 	if patientID == "" {
 		return fmt.Errorf("social security number cannot be empty")
-	}
-
-	compositeKey, err := createCompositeKey(ctx, patientID)
-	if err != nil {
-		return fmt.Errorf("failed to create composite key: %v", err)
 	}
 
 	queryString := fmt.Sprintf(`{
@@ -143,7 +116,7 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 	for queryResultsIterator.HasNext() {
 		queryResponse, err := queryResultsIterator.Next()
 		if err != nil {
-			fmt.Errorf("error retrieving next query result: %v", err)
+			return fmt.Errorf("error retrieving next query result: %v", err)
 		}
 
 		// Unmarshal the query response into a Request struct
@@ -155,62 +128,39 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 
 		request.Status = response
 		request.StatusChangedDate = time.Now().Unix()
-	}
 
-	// Vamos rezar para que ele seja inteligente e que esteja ligado no que diz respeito
-	// a ser o mesmo objeto e desta forma poupo tempo na iteração etc.
-	if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
-		return fmt.Errorf("failed to update the wallet: %v", err)
+		// Marshal the updated request back to JSON
+		updatedRequestJSON, err := json.Marshal(request)
+		if err != nil {
+			return fmt.Errorf("failed to marshal updated request: %v", err)
+		}
+
+		// Update the request on the ledger
+		err = ctx.GetStub().PutState(queryResponse.Key, updatedRequestJSON)
+		if err != nil {
+			return fmt.Errorf("failed to update request: %v", err)
+		}
 	}
 
 	return nil
 }
 
-func findPendingRequest(requests []Request, requestID string) *Request {
-	var targetRequest *Request
+// Vamos obter todo o histórico do utente.
+func (c *PatientContract) GetPatientMedicalHistory(ctx contractapi.TransactionContextInterface,
+	patientID, healthcareProfessionalID, organization string) ([]HealthRecord, error) {
 
-	for i := range requests {
-		_req := requests[i]
+	healthRecordsKey := fmt.Sprintf("healthRecords_%s", patientID)
+	existingRecordsBytes, err := ctx.GetStub().GetState(healthRecordsKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read existing health records: %v", err)
+	}
 
-		if _req.RequestID == requestID {
-			targetRequest = &_req
-			break
+	var existingRecords []HealthRecord
+	if existingRecordsBytes != nil {
+		if err := json.Unmarshal(existingRecordsBytes, &existingRecords); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal existing health records: %v", err)
 		}
 	}
 
-	return targetRequest
-}
-
-func createCompositeKey(ctx contractapi.TransactionContextInterface, key string) (string, error) {
-	compositeKey, err := ctx.GetStub().CreateCompositeKey("PatientWallet", []string{"patientID", key})
-	if err != nil {
-		return "", fmt.Errorf("failed to create composite key: %v", err)
-	}
-	return compositeKey, nil
-}
-
-// func updateWallet(ctx contractapi.TransactionContextInterface, patientWallet PatientWallet, key string) error {
-// 	updatedWalletBytes, err := json.Marshal(patientWallet)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to marshal updated patient wallet: %v", err)
-// 	}
-
-// 	err = ctx.GetStub().PutState(key, updatedWalletBytes)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to update patient wallet: %v", err)
-// 	}
-
-// 	return nil
-// }
-
-func generateUniqueID(patientID, description string) string {
-	input := patientID + description
-
-	hasher := sha256.New()
-	hasher.Write([]byte(input))
-	hashInBytes := hasher.Sum(nil)
-
-	hashString := hex.EncodeToString(hashInBytes)
-
-	return hashString
+	return existingRecords, nil
 }
