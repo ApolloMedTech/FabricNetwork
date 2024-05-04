@@ -104,28 +104,6 @@ func (c *DoctorContract) RequestPatientMedicalData(ctx contractapi.TransactionCo
 	return nil
 }
 
-func storeRequest(ctx contractapi.TransactionContextInterface, request Request) error {
-	// Serialize the request object to JSON
-	requestJSON, err := json.Marshal(request)
-	if err != nil {
-		return fmt.Errorf("failed to serialize request to JSON: %v", err)
-	}
-
-	// Generate composite key for the request
-	compositeKey, err := ctx.GetStub().CreateCompositeKey("Request", []string{request.RequestID})
-	if err != nil {
-		return fmt.Errorf("failed to create composite key for request: %v", err)
-	}
-
-	// Store the serialized request on the ledger
-	err = ctx.GetStub().PutState(compositeKey, requestJSON)
-	if err != nil {
-		return fmt.Errorf("failed to store request on the ledger: %v", err)
-	}
-
-	return nil
-}
-
 func (c *DoctorContract) AddPatientMedicalRecord(ctx contractapi.TransactionContextInterface,
 	description, healthCareProfessionalID, healthCareProfessional, patientID,
 	organization, recordType, speciality string, eventDate int64) error {
@@ -216,6 +194,28 @@ func (c *DoctorContract) GetRequests(ctx contractapi.TransactionContextInterface
 	}
 
 	return requests, nil
+}
+
+func storeRequest(ctx contractapi.TransactionContextInterface, request Request) error {
+	// Serialize the request object to JSON
+	requestJSON, err := json.Marshal(request)
+	if err != nil {
+		return fmt.Errorf("failed to serialize request to JSON: %v", err)
+	}
+
+	// Generate composite key for the request
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("Request", []string{request.RequestID})
+	if err != nil {
+		return fmt.Errorf("failed to create composite key for request: %v", err)
+	}
+
+	// Store the serialized request on the ledger
+	err = ctx.GetStub().PutState(compositeKey, requestJSON)
+	if err != nil {
+		return fmt.Errorf("failed to store request on the ledger: %v", err)
+	}
+
+	return nil
 }
 
 func checkAuthorizationVerification(ctx contractapi.TransactionContextInterface,

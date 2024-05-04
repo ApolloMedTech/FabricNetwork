@@ -86,7 +86,7 @@ func (c *PatientContract) GetRequests(ctx contractapi.TransactionContextInterfac
 
 // Função que permite o paciente aceitar ou negar o pedido de acesso aos seus dados
 func (c *PatientContract) AnswerRequest(ctx contractapi.TransactionContextInterface,
-	response int, requestID, patientID string) error {
+	response int, requestID, patientID string, expirationDate int64) error {
 
 	// Colocar os erros de parametros 1.o não vale a pena ir à blockchain quando os campos nem válidos estão.
 	if requestID == "" {
@@ -140,6 +140,46 @@ func (c *PatientContract) AnswerRequest(ctx contractapi.TransactionContextInterf
 		if err != nil {
 			return fmt.Errorf("failed to update request: %v", err)
 		}
+
+		if response == 1 {
+			err := addAccess(ctx, requestID, patientID, request.HealthCareProfessionalID, request.Organization, expirationDate)
+			if err != nil {
+				return fmt.Errorf("failed to add access: %v", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID, organization string,
+	expirationDate int64) error {
+	// Create a new access based on the approved request
+	access := Access{
+		RequestID:                requestID,
+		PatientID:                patientID,
+		HealthcareProfessionalID: healthcareProfessionalID,
+		Organization:             organization,
+		CreatedDate:              time.Now().UTC().Unix(),
+		ExpirationDate:           expirationDate, // or set the expiration date as needed
+	}
+
+	// Serialize the access object to JSON
+	accessJSON, err := json.Marshal(access)
+	if err != nil {
+		return fmt.Errorf("failed to serialize access to JSON: %v", err)
+	}
+
+	// Generate composite key for the access
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("Access", []string{patientID})
+	if err != nil {
+		return fmt.Errorf("failed to create composite key for access: %v", err)
+	}
+
+	// Store the serialized access on the ledger
+	err = ctx.GetStub().PutState(compositeKey, accessJSON)
+	if err != nil {
+		return fmt.Errorf("failed to store access on the ledger: %v", err)
 	}
 
 	return nil
