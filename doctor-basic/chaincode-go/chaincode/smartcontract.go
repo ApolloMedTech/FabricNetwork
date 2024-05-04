@@ -50,9 +50,7 @@ type Access struct {
 func (c *DoctorContract) GetPatientMedicalHistory(ctx contractapi.TransactionContextInterface,
 	patientID, healthcareProfessionalID string) ([]HealthRecord, error) {
 
-	err := checkAuthorizationVerification(ctx,
-		healthcareProfessionalID,
-		patientID)
+	err := checkAuthorizationVerification(ctx, healthcareProfessionalID, patientID)
 
 	if err != nil {
 		return nil, err
@@ -213,8 +211,7 @@ func storeRequest(ctx contractapi.TransactionContextInterface, request Request) 
 	return nil
 }
 
-func checkAuthorizationVerification(ctx contractapi.TransactionContextInterface,
-	healthcareProfessionalID, patientID string) error {
+func checkAuthorizationVerification(ctx contractapi.TransactionContextInterface, healthcareProfessionalID, patientID string) error {
 
 	compositeKey, err := createCompositeKey(ctx, patientID)
 	if err != nil {

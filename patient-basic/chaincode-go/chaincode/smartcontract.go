@@ -151,8 +151,7 @@ func (c *PatientContract) AnswerRequest(ctx contractapi.TransactionContextInterf
 	return nil
 }
 
-func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID string,
-	expirationDate int64) error {
+func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID string, expirationDate int64) error {
 	// Create a new access based on the approved request
 	access := Access{
 		RequestID:                requestID,
