@@ -10,7 +10,7 @@ import (
 
 // Método de start quando o chaincode leva deploy.
 func main() {
-	assetChaincode, err := contractapi.NewChaincode(&chaincode.DoctorContract{})
+	assetChaincode, err := contractapi.NewChaincode(&chaincode.HealthContract{})
 	if err != nil {
 		fmt.Printf("Error creating PatientChaincode: %v", err)
 		return

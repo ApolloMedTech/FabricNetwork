@@ -104,8 +104,10 @@ func main() {
 
 	//AnswerRequest(contract, 1, "7a54553d938db9a6ac13f95370f2e0bbe787ef38136aa8972687d2d3ec80574d", "Hugo", 192381)
 
-	// // É respondido por parte do utente que o pedido pode ir lá
-	// GetPatientMedicalHistory(contract, "paciente T", "29291240")
+	// É respondido por parte do utente que o pedido pode ir lá
+	GetPatientMedicalHistory(contract, "Hugo", "29291240")
+
+	GetMedicalHistory(contract, "Hugo")
 
 	// GetAccessesByPatientID(contract, "Hugo")
 	// GetAccessesByHealthcareProfessionalID(contract, "29291240")
@@ -162,9 +164,21 @@ func GetAccessesByHealthcareProfessionalID(contract *client.Contract, healthcare
 }
 
 func GetPatientMedicalHistory(contract *client.Contract, patientID, healthcareProfessionalID string) {
-	fmt.Println("\n--> Evaluate Transaction: Vamos obter o histórico médico mediante um NISS")
+	fmt.Println("\n--> Evaluate Transaction: Vamos obter o histórico médico pelo médico")
 
 	evaluateResult, err := contract.EvaluateTransaction("GetPatientMedicalHistory", patientID, healthcareProfessionalID)
+	if err != nil {
+		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
+	}
+	result := formatJSON(evaluateResult)
+
+	fmt.Printf("*** Result:%s\n", result)
+}
+
+func GetMedicalHistory(contract *client.Contract, patientID string) {
+	fmt.Println("\n--> Evaluate Transaction: Vamos obter o histórico médico pelo paciente")
+
+	evaluateResult, err := contract.EvaluateTransaction("GetMedicalHistory", patientID)
 	if err != nil {
 		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
 	}

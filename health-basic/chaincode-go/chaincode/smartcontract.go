@@ -10,7 +10,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-type DoctorContract struct {
+type HealthContract struct {
 	contractapi.Contract
 }
 
@@ -50,14 +50,30 @@ type Access struct {
 	ExpirationDate           int64  `json:"expirationDate"`
 }
 
-func (c *DoctorContract) GetPatientMedicalHistory(ctx contractapi.TransactionContextInterface,
+func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionContextInterface,
 	patientID, healthcareProfessionalID string) ([]HealthRecord, error) {
 
-	// err := checkAuthorizationVerification(ctx, healthcareProfessionalID, patientID)
+	err := checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
+
+	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create composite key: %v", err)
+	}
+
+	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patient wallet: %v", err)
+	}
+
+	return patientWallet.HealthRecords, nil
+}
+
+func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
+	patientID string) ([]HealthRecord, error) {
 
 	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
 	if err != nil {
@@ -73,7 +89,7 @@ func (c *DoctorContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 }
 
 // getAccessesByPatientID retrieves all accesses associated with a specific patient ID using a selector query.
-func (c *DoctorContract) GetAccessesByPatientID(ctx contractapi.TransactionContextInterface, patientID string) ([]Access, error) {
+func (c *HealthContract) GetAccessesByPatientID(ctx contractapi.TransactionContextInterface, patientID string) ([]Access, error) {
 	// Construct the selector query to retrieve accesses by patientID
 	queryString := fmt.Sprintf(`{
         "selector": {
@@ -114,7 +130,7 @@ func (c *DoctorContract) GetAccessesByPatientID(ctx contractapi.TransactionConte
 	return accesses, nil
 }
 
-func (c *DoctorContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.TransactionContextInterface, healthcareProfessionalID string) ([]Access, error) {
+func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.TransactionContextInterface, healthcareProfessionalID string) ([]Access, error) {
 	// Construct the selector query to retrieve accesses by patientID
 	queryString := fmt.Sprintf(`{
         "selector": {
@@ -156,7 +172,7 @@ func (c *DoctorContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.T
 }
 
 // AnswerRequest allows the patient to accept or deny the request for access to their data.
-func (c *DoctorContract) AnswerRequest(ctx contractapi.TransactionContextInterface,
+func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterface,
 	response int, requestID, patientID string, expirationDate int64) error {
 
 	// Check parameter validity
@@ -257,7 +273,7 @@ func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID
 	return nil
 }
 
-func (c *DoctorContract) RequestPatientMedicalData(ctx contractapi.TransactionContextInterface,
+func (c *HealthContract) RequestPatientMedicalData(ctx contractapi.TransactionContextInterface,
 	patientID, description, healthcareProfessionalID string,
 	healthcareProfessional string) error {
 
@@ -281,7 +297,7 @@ func (c *DoctorContract) RequestPatientMedicalData(ctx contractapi.TransactionCo
 	return nil
 }
 
-func (c *DoctorContract) GetRequestsWithPatient(ctx contractapi.TransactionContextInterface, patientID string) ([]Request, error) {
+func (c *HealthContract) GetRequestsWithPatient(ctx contractapi.TransactionContextInterface, patientID string) ([]Request, error) {
 	queryString := fmt.Sprintf(`{
         "selector": {
             "patientID": "%s",
@@ -312,7 +328,7 @@ func (c *DoctorContract) GetRequestsWithPatient(ctx contractapi.TransactionConte
 	return requests, nil
 }
 
-func (c *DoctorContract) GetRequestsWithHealthcareProfessional(ctx contractapi.TransactionContextInterface, healthcareProfessionalID string) ([]Request, error) {
+func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.TransactionContextInterface, healthcareProfessionalID string) ([]Request, error) {
 	queryString := fmt.Sprintf(`{
         "selector": {
             "healthcareProfessionalID": "%s",
@@ -343,35 +359,30 @@ func (c *DoctorContract) GetRequestsWithHealthcareProfessional(ctx contractapi.T
 	return requests, nil
 }
 
-func (c *DoctorContract) AddPatientMedicalRecord(ctx contractapi.TransactionContextInterface,
-	description, healthCareProfessionalID, healthCareProfessional, patientID,
+func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionContextInterface,
+	description, healthcareProfessionalID, healthcareProfessional, patientID,
 	organization, recordType, speciality string, eventDate int64) error {
 
-	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
+	err := checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
+
 	if err != nil {
-		return fmt.Errorf("failed to create composite key: %v", err)
+		return err
 	}
-
-	// acesses, err := getCurrentPatientAccesses(ctx, compositeKey)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-	// }
-
-	// err = checkIfHealthcareProfessionalHaveAccess(acesses, healthCareProfessionalID)
-
-	// if err != nil {
-	// 	return err
-	// }
 
 	newRecord := HealthRecord{
 		Description:              description,
 		CreatedDate:              time.Now().Unix(),
-		HealthCareProfessional:   healthCareProfessional,
-		HealthCareProfessionalID: healthCareProfessionalID,
+		HealthCareProfessional:   healthcareProfessional,
+		HealthCareProfessionalID: healthcareProfessionalID,
 		EventDate:                eventDate,
 		Organization:             organization,
 		RecordType:               recordType,
 		Speciality:               speciality,
+	}
+
+	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
+	if err != nil {
+		return fmt.Errorf("failed to create composite key: %v", err)
 	}
 
 	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
@@ -422,37 +433,6 @@ func storeRequest(ctx contractapi.TransactionContextInterface, request Request) 
 	return nil
 }
 
-func checkAuthorizationVerification(ctx contractapi.TransactionContextInterface, healthcareProfessionalID, patientID string) error {
-
-	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
-	if err != nil {
-		return fmt.Errorf("failed to create composite key: %v", err)
-	}
-
-	acesses, err := getCurrentPatientAccesses(ctx, compositeKey)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-	}
-
-	err = checkIfHealthcareProfessionalHaveAccess(acesses, healthcareProfessionalID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func checkIfHealthcareProfessionalHaveAccess(accesses *[]Access, healthcareProfessionalID string) error {
-	for _, access := range *accesses {
-		if access.HealthcareProfessionalID == healthcareProfessionalID &&
-			access.ExpirationDate <= time.Now().Unix() {
-			return nil
-		}
-	}
-	return fmt.Errorf("no access found for healthcare professional: %s", healthcareProfessionalID)
-}
-
 func createPatientWalletCompositeKey(ctx contractapi.TransactionContextInterface, key string) (string, error) {
 	compositeKey, err := ctx.GetStub().CreateCompositeKey("PatientWallet", []string{"patientID", key})
 	if err != nil {
@@ -499,25 +479,39 @@ func getCurrentPatientWallet(ctx contractapi.TransactionContextInterface,
 	return &patientWallet, nil
 }
 
-func getCurrentPatientAccesses(ctx contractapi.TransactionContextInterface, key string) (*[]Access, error) {
+func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextInterface, patientID, healthcareProfessionalID string) error {
 
-	walletBytes, err := ctx.GetStub().GetState(key)
+	queryString := fmt.Sprintf(`{
+        "selector": {
+            "patientID": "%s",
+            "healthcareProfessionalID": "%s",
+			"resourceType": 2
+        }
+    }`, patientID, healthcareProfessionalID)
+
+	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read patient wallet: %v", err)
+		return fmt.Errorf("failed to execute query: %v", err)
 	}
+	defer queryResultsIterator.Close()
 
-	var accesses []Access
-
-	if walletBytes != nil {
-		err = json.Unmarshal(walletBytes, &accesses)
+	for queryResultsIterator.HasNext() {
+		queryResponse, err := queryResultsIterator.Next()
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
+			return fmt.Errorf("error retrieving next query result: %v", err)
 		}
-	} else {
-		accesses = []Access{}
+
+		var access Access
+		if err := json.Unmarshal(queryResponse.Value, &access); err != nil {
+			return fmt.Errorf("error unmarshalling query result: %v", err)
+		}
+
+		if access.ExpirationDate <= time.Now().Unix() {
+			return nil
+		}
 	}
 
-	return &accesses, nil
+	return fmt.Errorf("have no access %v", err)
 }
 
 func generateUniqueID(patientID, description string) string {
