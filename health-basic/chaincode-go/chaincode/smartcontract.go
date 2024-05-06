@@ -59,33 +59,52 @@ func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 		return nil, err
 	}
 
-	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create composite key: %v", err)
-	}
-
-	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+	healthRecords, err := c.GetMedicalHistory(ctx, patientID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get patient wallet: %v", err)
 	}
 
-	return patientWallet.HealthRecords, nil
+	return healthRecords, nil
 }
 
-func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInterface,
-	patientID string) ([]HealthRecord, error) {
+func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInterface, patientID string) ([]HealthRecord, error) {
 
-	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
+	// Injeto o ID da wallet e assim é mais rápido.
+	queryString := fmt.Sprintf(`{
+        "selector": {
+            "_id": "\u0000%s\u0000%s\u0000%s\u0000"
+        },
+		"fields": [
+			"healthRecords"
+		]
+    }`, "PatientWallet", "patientID", patientID)
+
+	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create composite key: %v", err)
+		return nil, fmt.Errorf("query falhou execucao: %v", err)
+	}
+	defer queryResultsIterator.Close()
+
+	var patientWallet PatientWallet
+	var healthRecords []HealthRecord
+
+	if queryResultsIterator.HasNext() {
+		queryResponse, err := queryResultsIterator.Next()
+
+		if err != nil {
+			return nil, fmt.Errorf("erro ao obter os dados do paciente: %v", err)
+		}
+
+		if err := json.Unmarshal(queryResponse.Value, &patientWallet); err != nil {
+			return nil, fmt.Errorf("erro ao transformar os dados na wallet: %v", err)
+		}
+
+		healthRecords = patientWallet.HealthRecords
+	} else {
+		healthRecords = []HealthRecord{}
 	}
 
-	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get patient wallet: %v", err)
-	}
-
-	return patientWallet.HealthRecords, nil
+	return healthRecords, nil
 }
 
 // getAccessesByPatientID retrieves all accesses associated with a specific patient ID using a selector query.
@@ -200,14 +219,12 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 
 	defer queryResultsIterator.Close()
 
-	// Iterate over the query results and parse them into Request structs
-	for queryResultsIterator.HasNext() {
+	if queryResultsIterator.HasNext() {
 		queryResponse, err := queryResultsIterator.Next()
 		if err != nil {
 			return fmt.Errorf("error retrieving next query result: %v", err)
 		}
 
-		// Unmarshal the query response into a Request struct
 		var request Request
 		err = json.Unmarshal(queryResponse.Value, &request)
 		if err != nil {
@@ -217,7 +234,6 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 		request.Status = response
 		request.StatusChangedDate = time.Now().Unix()
 
-		// Marshal the updated request back to JSON
 		updatedRequestJSON, err := json.Marshal(request)
 		if err != nil {
 			return fmt.Errorf("failed to marshal updated request: %v", err)
@@ -506,6 +522,7 @@ func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextI
 			return fmt.Errorf("error unmarshalling query result: %v", err)
 		}
 
+		// inverter o if quando no servidor :)
 		if access.ExpirationDate <= time.Now().Unix() {
 			return nil
 		}
