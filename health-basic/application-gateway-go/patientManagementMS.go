@@ -91,22 +91,21 @@ func main() {
 	network := gw.GetNetwork(channelName)
 	contract := network.GetContract(chaincodeName)
 
-	// AddPatientMedicalRecord(contract, "Deslocou o tornozelo a correr na floresta.",
-	// 	"29291240", "Dr. Apollo", "Teste", "Organizacao Hospital",
-	// 	"Urgência médica", "Fisioterapeuta",
-	// 	34080)
+	AddPatientMedicalRecord(contract, "Deslocou o tornozelo a correr na floresta.",
+		"29291240", "Dr. MedTech", "Teste", "Organizacao Hospital",
+		"Urgência médica", "Fisioterapeuta",
+		34080)
 
 	// Solicitar acesso aos dados do paciente
 	// RequestPatientMedicalData(contract, "Teste", "Hospital", "29291240", "Dr. Apollo")
 
-	GetRequestsWithHealthcareProfessional(contract, "29291240")
-	GetRequestsWithPatient(contract, "Teste")
+	// GetRequestsWithHealthcareProfessional(contract, "29291240")
+	// GetRequestsWithPatient(contract, "Teste")
 
-	//AnswerRequest(contract, 1, "7a54553d938db9a6ac13f95370f2e0bbe787ef38136aa8972687d2d3ec80574d", "Teste", 192381)
+	//vAnswerRequest(contract, 1, "934d09959b758954d42ac9a0bfc8d08a30f3ff2ec807b84dff7d5b3ef3bd024a", "Teste", 192381)
 
 	// É respondido por parte do utente que o pedido pode ir lá
 	GetPatientMedicalHistory(contract, "Teste", "29291240")
-
 	GetMedicalHistory(contract, "Teste")
 
 	// GetAccessesByPatientID(contract, "Teste")
