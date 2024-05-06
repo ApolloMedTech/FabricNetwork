@@ -80,8 +80,10 @@ func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInt
     }`, "PatientWallet", "patientID", patientID)
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+
+	// Aqui não posso dar erro, tenho de fazer desta maneira
 	if err != nil {
-		return nil, fmt.Errorf("query falhou execucao: %v", err)
+		return []HealthRecord{}, nil
 	}
 	defer queryResultsIterator.Close()
 
