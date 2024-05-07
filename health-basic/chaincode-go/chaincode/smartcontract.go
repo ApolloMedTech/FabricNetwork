@@ -44,6 +44,7 @@ type Access struct {
 	RequestID                string `json:"requestID"`
 	PatientID                string `json:"patientID"`
 	HealthcareProfessionalID string `json:"healthcareProfessionalID"`
+	HealthcareProfessional   string `json:"healthcareProfessional"`
 	CreatedDate              int64  `json:"createdDate"`
 	ExpirationDate           int64  `json:"expirationDate"`
 }
@@ -292,7 +293,7 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 		}
 
 		if response == 1 {
-			err := addAccess(ctx, requestID, patientID, request.HealthcareProfessionalID, expirationDate)
+			err := addAccess(ctx, requestID, patientID, request.HealthcareProfessionalID, request.HealthcareProfessional, expirationDate)
 			if err != nil {
 				return fmt.Errorf("failed to add access: %v", err)
 			}
@@ -429,13 +430,14 @@ func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 }
 
 // addAccess adds access to the patient's data.
-func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID string, expirationDate int64) error {
+func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID, healthcareProfessional string, expirationDate int64) error {
 	// Create a new access based on the approved request
 	access := Access{
 		ResourceType:             2,
 		RequestID:                requestID,
 		PatientID:                patientID,
 		HealthcareProfessionalID: healthcareProfessionalID,
+		HealthcareProfessional:   healthcareProfessional,
 		CreatedDate:              time.Now().Unix(),
 		ExpirationDate:           expirationDate, // or set the expiration date as needed
 	}
