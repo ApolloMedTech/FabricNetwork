@@ -132,6 +132,18 @@ func AddPatientMedicalRecord(contract *client.Contract, description, healthCareP
 	fmt.Printf("*** Transaction committed successfully\n")
 }
 
+func RemoveAccess(contract *client.Contract, patientID, requestID string) {
+	fmt.Printf("\n--> Submit Transaction: Vamos remover um acesso. \n")
+
+	_, err := contract.SubmitTransaction("RemoveAccess", patientID, requestID)
+
+	if err != nil {
+		panic(fmt.Errorf("failed to submit transaction: %w", err))
+	}
+
+	fmt.Printf("*** Transaction committed successfully\n")
+}
+
 func int64ToString(value int64) string {
 	return strconv.FormatInt(value, 10)
 }

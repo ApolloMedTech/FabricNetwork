@@ -1,8 +1,6 @@
 package chaincode
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -151,6 +149,51 @@ func (c *HealthContract) GetAccessesByPatientID(ctx contractapi.TransactionConte
 	return accesses, nil
 }
 
+func (c *HealthContract) RemoveAccess(ctx contractapi.TransactionContextInterface, patientID, requestID string) error {
+
+	queryString := fmt.Sprintf(`{
+        "selector": {
+            "_id": "\u0000%s\u0000%s\u0000%s\u0000",
+			"patientID": "%s",
+			"resourceType": 2
+        }
+    }`, "Acesses", "requestID", requestID, patientID)
+
+	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return fmt.Errorf("no access found: %v", err)
+	}
+
+	if queryResultsIterator.HasNext() {
+		queryResponse, err := queryResultsIterator.Next()
+		if err != nil {
+			return fmt.Errorf("error retrieving next query result: %v", err)
+		}
+
+		var access Access
+		err = json.Unmarshal(queryResponse.Value, &access)
+		if err != nil {
+			return fmt.Errorf("error unmarshalling access: %v", err)
+		}
+
+		// Expiramos o acesso, simplificado por agora.
+		access.ExpirationDate = time.Now().Unix()
+
+		updatedAccessJSON, err := json.Marshal(access)
+		if err != nil {
+			return fmt.Errorf("failed to marshal updated request: %v", err)
+		}
+
+		// Update the request on the ledger
+		err = ctx.GetStub().PutState(queryResponse.Key, updatedAccessJSON)
+		if err != nil {
+			return fmt.Errorf("failed to update request: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.TransactionContextInterface,
 	healthcareProfessionalID string) ([]Access, error) {
 	// Construct the selector query to retrieve accesses by patientID
@@ -259,46 +302,13 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
-// addAccess adds access to the patient's data.
-func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID string, expirationDate int64) error {
-	// Create a new access based on the approved request
-	access := Access{
-		ResourceType:             2,
-		RequestID:                requestID,
-		PatientID:                patientID,
-		HealthcareProfessionalID: healthcareProfessionalID,
-		CreatedDate:              time.Now().Unix(),
-		ExpirationDate:           expirationDate, // or set the expiration date as needed
-	}
-
-	// Serialize the access object to JSON
-	accessJSON, err := json.Marshal(access)
-	if err != nil {
-		return fmt.Errorf("failed to serialize access to JSON: %v", err)
-	}
-
-	// Generate composite key for the access
-	compositeKey, err := createAcessesCompositeKey(ctx, requestID)
-	if err != nil {
-		return fmt.Errorf("failed to create composite key for access: %v", err)
-	}
-
-	// Store the serialized access on the ledger
-	err = ctx.GetStub().PutState(compositeKey, accessJSON)
-	if err != nil {
-		return fmt.Errorf("failed to store access on the ledger: %v", err)
-	}
-
-	return nil
-}
-
 func (c *HealthContract) RequestPatientMedicalData(ctx contractapi.TransactionContextInterface,
 	patientID, description, healthcareProfessionalID string,
-	healthcareProfessional string) error {
+	healthcareProfessional, requestID string) error {
 
 	request := Request{
 		ResourceType:             1,
-		RequestID:                generateUniqueID(patientID, description),
+		RequestID:                requestID,
 		Description:              description,
 		PatientID:                patientID,
 		Status:                   0,
@@ -413,6 +423,39 @@ func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 
 	if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
 		return fmt.Errorf("failed to update the wallet: %v", err)
+	}
+
+	return nil
+}
+
+// addAccess adds access to the patient's data.
+func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID string, expirationDate int64) error {
+	// Create a new access based on the approved request
+	access := Access{
+		ResourceType:             2,
+		RequestID:                requestID,
+		PatientID:                patientID,
+		HealthcareProfessionalID: healthcareProfessionalID,
+		CreatedDate:              time.Now().Unix(),
+		ExpirationDate:           expirationDate, // or set the expiration date as needed
+	}
+
+	// Serialize the access object to JSON
+	accessJSON, err := json.Marshal(access)
+	if err != nil {
+		return fmt.Errorf("failed to serialize access to JSON: %v", err)
+	}
+
+	// Generate composite key for the access
+	compositeKey, err := createAcessesCompositeKey(ctx, requestID)
+	if err != nil {
+		return fmt.Errorf("failed to create composite key for access: %v", err)
+	}
+
+	// Store the serialized access on the ledger
+	err = ctx.GetStub().PutState(compositeKey, accessJSON)
+	if err != nil {
+		return fmt.Errorf("failed to store access on the ledger: %v", err)
 	}
 
 	return nil
@@ -534,14 +577,14 @@ func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextI
 	return fmt.Errorf("have no access %v", err)
 }
 
-func generateUniqueID(patientID, description string) string {
-	input := patientID + description
+// func generateUniqueID(key string) string {
+// 	input := key
 
-	hasher := sha256.New()
-	hasher.Write([]byte(input))
-	hashInBytes := hasher.Sum(nil)
+// 	hasher := sha256.New()
+// 	hasher.Write([]byte(input))
+// 	hashInBytes := hasher.Sum(nil)
 
-	hashString := hex.EncodeToString(hashInBytes)
+// 	hashString := hex.EncodeToString(hashInBytes)
 
-	return hashString
-}
+// 	return hashString
+// }
