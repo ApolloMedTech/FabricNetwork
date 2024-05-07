@@ -122,7 +122,7 @@ func (c *HealthContract) GetAccessesByPatientID(ctx contractapi.TransactionConte
 	// Execute the selector query
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %v", err)
+		return []Access{}, nil
 	}
 	defer queryResultsIterator.Close()
 
@@ -151,7 +151,8 @@ func (c *HealthContract) GetAccessesByPatientID(ctx contractapi.TransactionConte
 	return accesses, nil
 }
 
-func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.TransactionContextInterface, healthcareProfessionalID string) ([]Access, error) {
+func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.TransactionContextInterface,
+	healthcareProfessionalID string) ([]Access, error) {
 	// Construct the selector query to retrieve accesses by patientID
 	queryString := fmt.Sprintf(`{
         "selector": {
@@ -163,7 +164,7 @@ func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.T
 	// Execute the selector query
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %v", err)
+		return []Access{}, nil
 	}
 	defer queryResultsIterator.Close()
 
@@ -325,7 +326,7 @@ func (c *HealthContract) GetRequestsWithPatient(ctx contractapi.TransactionConte
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %v", err)
+		return []Request{}, nil
 	}
 	defer queryResultsIterator.Close()
 
@@ -356,7 +357,7 @@ func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.T
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %v", err)
+		return []Request{}, nil
 	}
 	defer queryResultsIterator.Close()
 
