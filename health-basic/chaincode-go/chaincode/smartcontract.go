@@ -570,7 +570,7 @@ func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextI
 			return fmt.Errorf("error unmarshalling query result: %v", err)
 		}
 
-		// inverter o if quando no servidor :)
+		//TODO: inverter o if quando no servidor :)
 		if access.ExpirationDate <= time.Now().Unix() {
 			return nil
 		}
