@@ -466,7 +466,7 @@ func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.T
 }
 
 func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionContextInterface,
-	description, healthcareProfessionalID, healthcareProfessional, patientID,
+	recordID, description, healthcareProfessionalID, healthcareProfessional, patientID,
 	organization, recordType, speciality string, eventDate int64) error {
 
 	err := checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
@@ -476,6 +476,7 @@ func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 	}
 
 	newRecord := HealthRecord{
+		RecordID:                 recordID,
 		Description:              description,
 		CreatedDate:              time.Now().Unix(),
 		HealthCareProfessional:   healthcareProfessional,
@@ -647,7 +648,7 @@ func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextI
 		}
 
 		//TODO: inverter o if quando no servidor :)
-		if access.ExpirationDate <= time.Now().Unix() {
+		if access.ExpirationDate >= time.Now().Unix() {
 			return nil
 		}
 	}
