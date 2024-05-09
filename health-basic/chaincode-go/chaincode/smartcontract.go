@@ -17,6 +17,7 @@ type PatientWallet struct {
 }
 
 type HealthRecord struct {
+	RecordID                 string `json:"recordID"`
 	Description              string `json:"description"`
 	HealthCareProfessionalID string `json:"healthCareProfessionalID"`
 	HealthCareProfessional   string `json:"healthCareProfessional"`
@@ -106,6 +107,79 @@ func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInt
 	}
 
 	return healthRecords, nil
+}
+
+func (c *HealthContract) GetHealthRecordWithPatientByID(ctx contractapi.TransactionContextInterface, patientID, recordID string) (*HealthRecord, error) {
+
+	healthRecord, err := getHealthRecordByID(ctx, patientID, recordID)
+
+	if err != nil {
+		return nil, fmt.Errorf("erro ao obter o dado de saúde: %v", err)
+	}
+
+	return healthRecord, nil
+}
+
+func (c *HealthContract) GetHealthRecordWithPHealthcareProfessionalByID(ctx contractapi.TransactionContextInterface, patientID, healthcareProfessionalID, recordID string) (*HealthRecord, error) {
+
+	err := checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	healthRecord, err := getHealthRecordByID(ctx, patientID, recordID)
+
+	if err != nil {
+		return nil, fmt.Errorf("erro ao obter o dado de saúde: %v", err)
+	}
+
+	return healthRecord, nil
+}
+
+func getHealthRecordByID(ctx contractapi.TransactionContextInterface, patientID, recordID string) (*HealthRecord, error) {
+
+	// Injeto o ID da wallet e assim é mais rápido.
+	queryString := fmt.Sprintf(`{
+        "selector": {
+            "_id": "\u0000%s\u0000%s\u0000%s\u0000",
+			"recordID" : %s
+        },
+		"fields": [
+			"healthRecords"
+		]
+    }`, "PatientWallet", "patientID", recordID, patientID)
+
+	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+
+	// Aqui não posso dar erro, tenho de fazer desta maneira
+	if err != nil {
+		return &HealthRecord{}, nil
+	}
+
+	defer queryResultsIterator.Close()
+
+	var healthRecord HealthRecord
+	var healthRecords []HealthRecord
+
+	if queryResultsIterator.HasNext() {
+		queryResponse, err := queryResultsIterator.Next()
+
+		if err != nil {
+			return nil, fmt.Errorf("erro ao obter os dados do paciente: %v", err)
+		}
+
+		if err := json.Unmarshal(queryResponse.Value, &healthRecords); err != nil {
+			return nil, fmt.Errorf("erro ao transformar os dados na wallet: %v", err)
+		}
+
+		healthRecord = healthRecords[0]
+
+	} else {
+		healthRecord = HealthRecord{}
+	}
+
+	return &healthRecord, nil
 }
 
 // getAccessesByPatientID retrieves all accesses associated with a specific patient ID using a selector query.
@@ -331,7 +405,8 @@ func (c *HealthContract) GetRequestsWithPatient(ctx contractapi.TransactionConte
 	queryString := fmt.Sprintf(`{
         "selector": {
             "patientID": "%s",
-			"resourceType": 1
+			"resourceType": 1,
+			"status" : 0
         }
     }`, patientID)
 
@@ -362,7 +437,8 @@ func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.T
 	queryString := fmt.Sprintf(`{
         "selector": {
             "healthcareProfessionalID": "%s",
-			"resourceType": 1
+			"resourceType": 1,
+			"status" : 0
         }
     }`, healthcareProfessionalID)
 
