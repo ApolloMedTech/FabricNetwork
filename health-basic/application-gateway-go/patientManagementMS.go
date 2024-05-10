@@ -28,29 +28,22 @@ const (
 	gatewayPeer  = "peer0.org1.example.com"
 )
 
-// AccessControls representa os controles de acesso do paciente
-type AccessControls struct {
-	AccessControls []AccessControl `json:"accessControls"`
+type AddPatientMedicalRecordResponse struct {
+	HealthcareProfessionalHasAccess bool `json:"healthcareProfessionalHasAccess"`
+	HealthRecordAlreadyExist        bool `json:"healthRecordAlreadyExist"`
 }
 
-// AccessControl representa um controle de acesso individual
-type AccessControl struct {
-	Description string `json:"description"`
-	CreatedDate int64  `json:"createDate"`
-	Date        int64  `json:"date"`
-	EntityName  string `json:"entityName"`
-	RecordType  string `json:"type"`
-	RequestID   int    `json:"requestID"`
-	Status      Status `json:"status"`
+type SmartContractError struct {
+	Code    int
+	Message string
+	error
 }
-
-// Status representa o estado do pedido de acesso
-type Status int
 
 const (
-	Pending Status = iota
-	Accepted
-	Denied
+	UnknownError = iota
+	HealthRecordAlreadyExist
+	AccessDenied
+	RequestAlreadyExist
 )
 
 func main() {
@@ -92,23 +85,25 @@ func main() {
 	contract := network.GetContract(chaincodeName)
 
 	// Solicitar acesso aos dados do paciente
-	RequestPatientMedicalData(contract, "1", "Teste", "Hospital", "29291240", "Dr. Apollo")
+	// RequestPatientMedicalData(contract, "1", "Teste", "Hospital", "29291240", "Dr. Apollo")
 
 	// GetRequestsWithHealthcareProfessional(contract, "29291240")
 	// GetRequestsWithPatient(contract, "Teste")
 
-	AnswerRequest(contract, 1, "1", "Teste", 192381)
+	// AnswerRequest(contract, 1, "1", "Teste", 192381)
 
 	//	RemoveAccess("Teste", "1")
 
-	// AddPatientMedicalRecord(contract, "Deslocou o tornozelo a correr na floresta.",
+	// AddPatientMedicalRecord(contract, "3", "Deslocou o tornozelo a correr na floresta.",
 	// 	"29291240", "Dr. MedTech", "Teste", "Organizacao Hospital",
 	// 	"Urgência médica", "Fisioterapeuta",
 	// 	34080)
 
 	// É respondido por parte do utente que o pedido pode ir lá
-	// GetPatientMedicalHistory(contract, "Teste", "29291240")
-	//GetMedicalHistory(contract, "Teste")
+	//GetPatientMedicalHistory(contract, "Teste", "29291240")
+
+	GetHealthRecordWithPatientByID(contract, "Teste", "1")
+	// GetMedicalHistory(contract, "Teste")
 
 	// GetAccessesByPatientID(contract, "Teste")
 	// GetAccessesByHealthcareProfessionalID(contract, "29291240")
@@ -117,7 +112,7 @@ func main() {
 // Submit a transaction synchronously, blocking until it has been committed to the ledger.
 // Relembro que estas chamadas só retornam quando a ledger é atualizada, isto é,
 // A transacção completou todo o circuito.
-func AddPatientMedicalRecord(contract *client.Contract, description, healthCareProfessionalID, healthCareProfessional, patientID, organization, recordType, speciality string, eventDate int64) {
+func AddPatientMedicalRecord(contract *client.Contract, recordID, description, healthCareProfessionalID, healthCareProfessional, patientID, organization, recordType, speciality string, eventDate int64) {
 	fmt.Printf("\n--> Submit Transaction: Criar uma linha na blockchain com dados médicos. \n")
 
 	// Quando queremos submeter uma transação para o chaincode fazemos desta forma.
@@ -125,11 +120,11 @@ func AddPatientMedicalRecord(contract *client.Contract, description, healthCareP
 	// Sempre que vamos alterar a bockchain utilizamos o método SubmitTransaction.
 	dateString := int64ToString(eventDate)
 
-	_, err := contract.SubmitTransaction("AddPatientMedicalRecord", description, healthCareProfessionalID, healthCareProfessional, patientID, organization, recordType, speciality, dateString)
+	evaluateResult, _ := contract.SubmitTransaction("AddPatientMedicalRecord", recordID, description, healthCareProfessionalID, healthCareProfessional, patientID, organization, recordType, speciality, dateString)
 
-	if err != nil {
-		panic(fmt.Errorf("failed to submit transaction: %w", err))
-	}
+	result := formatJSON(evaluateResult)
+
+	fmt.Printf("*** Result:%s\n", result)
 
 	fmt.Printf("*** Transaction committed successfully\n")
 }
@@ -192,6 +187,18 @@ func GetMedicalHistory(contract *client.Contract, patientID string) {
 	fmt.Println("\n--> Evaluate Transaction: Vamos obter o histórico médico pelo paciente")
 
 	evaluateResult, err := contract.EvaluateTransaction("GetMedicalHistory", patientID)
+	if err != nil {
+		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
+	}
+	result := formatJSON(evaluateResult)
+
+	fmt.Printf("*** Result:%s\n", result)
+}
+
+func GetHealthRecordWithPatientByID(contract *client.Contract, patientID, recordID string) {
+	fmt.Println("\n--> Evaluate Transaction: Vamos obter o histórico médico pelo paciente")
+
+	evaluateResult, err := contract.EvaluateTransaction("GetHealthRecordWithPatientByID", patientID, recordID)
 	if err != nil {
 		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
 	}
