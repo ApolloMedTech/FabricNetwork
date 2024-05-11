@@ -10,4 +10,5 @@ type Request struct {
 	CreatedDate              int64  `json:"createdDate"`
 	Status                   int    `json:"status"`
 	StatusChangedDate        int64  `json:"statusChangedDate"`
+	ExpirationDate           int64  `json:"expirationDate"`
 }

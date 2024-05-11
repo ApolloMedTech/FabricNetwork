@@ -182,7 +182,7 @@ func (c *HealthContract) GetRequestsWithPatient(ctx contractapi.TransactionConte
 
 // AnswerRequest allows the patient to accept or deny the request for access to their data.
 func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterface,
-	response int, requestID, patientID string, expirationDate int64) error {
+	response int, requestID, patientID string) error {
 
 	// Check parameter validity
 	if requestID == "" {
@@ -236,7 +236,7 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 		}
 
 		if response == 1 {
-			err := addAccess(ctx, requestID, patientID, request.HealthcareProfessionalID, request.HealthcareProfessional, expirationDate)
+			err := addAccess(ctx, requestID, patientID, request.HealthcareProfessionalID, request.HealthcareProfessional, request.ExpirationDate)
 			if err != nil {
 				return fmt.Errorf("failed to add access: %v", err)
 			}
