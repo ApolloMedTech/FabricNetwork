@@ -92,7 +92,7 @@ func main() {
 
 	// AnswerRequest(contract, 1, "1", "Teste", 192381)
 
-	//	RemoveAccess("Teste", "1")
+	RemoveAccess("2fd8fb37-0c6d-4e72-a83a-bac93bf9fb29", "62512f2a1bc071d3a176110a3278bac9bb3a7cb5d3d98bee2c93f9be9796c9ad")
 
 	// AddPatientMedicalRecord(contract, "3", "Deslocou o tornozelo a correr na floresta.",
 	// 	"29291240", "Dr. MedTech", "Teste", "Organizacao Hospital",

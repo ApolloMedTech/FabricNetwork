@@ -64,12 +64,13 @@ func getHealthRecordByID(ctx contractapi.TransactionContextInterface, patientID,
 	return &healthRecord, nil
 }
 
-func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, healthcareProfessionalID, healthcareProfessional string, expirationDate int64) error {
+func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID, patientName, healthcareProfessionalID, healthcareProfessional string, expirationDate int64) error {
 	// Create a new access based on the approved request
 	access := Access{
 		ResourceType:             2,
 		RequestID:                requestID,
 		PatientID:                patientID,
+		PatientName:              patientName,
 		HealthcareProfessionalID: healthcareProfessionalID,
 		HealthcareProfessional:   healthcareProfessional,
 		CreatedDate:              time.Now().Unix(),

@@ -107,7 +107,6 @@ func (c *HealthContract) RemoveAccess(ctx contractapi.TransactionContextInterfac
 
 	queryString := fmt.Sprintf(`{
         "selector": {
-            "_id": "\u0000%s\u0000%s\u0000%s\u0000",
 			"patientID": "%s",
 			"resourceType": 2
         }
@@ -138,7 +137,6 @@ func (c *HealthContract) RemoveAccess(ctx contractapi.TransactionContextInterfac
 			return fmt.Errorf("failed to marshal updated request: %v", err)
 		}
 
-		// Update the request on the ledger
 		err = ctx.GetStub().PutState(queryResponse.Key, updatedAccessJSON)
 		if err != nil {
 			return fmt.Errorf("failed to update request: %v", err)
@@ -236,7 +234,8 @@ func (c *HealthContract) AnswerRequest(ctx contractapi.TransactionContextInterfa
 		}
 
 		if response == 1 {
-			err := addAccess(ctx, requestID, patientID, request.HealthcareProfessionalID, request.HealthcareProfessional, request.ExpirationDate)
+			err := addAccess(ctx, requestID, patientID, request.PatientName,
+				request.HealthcareProfessionalID, request.HealthcareProfessional, request.ExpirationDate)
 			if err != nil {
 				return fmt.Errorf("failed to add access: %v", err)
 			}

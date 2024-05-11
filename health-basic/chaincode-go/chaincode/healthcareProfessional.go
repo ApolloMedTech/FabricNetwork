@@ -28,7 +28,7 @@ func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 	patientID, healthcareProfessionalID string) (*GetPatientMedicalHistoryResponse, error) {
 
 	resp := GetPatientMedicalHistoryResponse{}
-	// resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
+	resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
 
 	// if resp.HealthcareProfessionalHasAccess {
 	healthRecords, err := c.GetMedicalHistory(ctx, patientID)
@@ -102,19 +102,21 @@ func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.T
 }
 
 func (c *HealthContract) RequestPatientMedicalData(ctx contractapi.TransactionContextInterface,
-	patientID, description, healthcareProfessionalID string,
-	healthcareProfessional, requestID string) error {
+	patientID, patientName, description, healthcareProfessionalID,
+	healthcareProfessional, requestID string, expirationDate int64) error {
 
 	request := Request{
 		ResourceType:             1,
 		RequestID:                requestID,
 		Description:              description,
 		PatientID:                patientID,
+		PatientName:              patientName,
 		Status:                   0,
 		HealthcareProfessionalID: healthcareProfessionalID,
 		HealthcareProfessional:   healthcareProfessional,
 		StatusChangedDate:        time.Now().Unix(),
 		CreatedDate:              time.Now().Unix(),
+		ExpirationDate:           expirationDate,
 	}
 
 	err := storeRequest(ctx, request)
@@ -210,7 +212,7 @@ func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextI
                 "$gt": %d
             }
         }
-    }`, patientID, healthcareProfessionalID, time.Now().Unix())
+    }`, patientID, healthcareProfessionalID, 1715460310)
 
 	return checkIfAnyDataAlreadyExist(ctx, queryString)
 }

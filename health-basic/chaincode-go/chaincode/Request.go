@@ -7,6 +7,7 @@ type Request struct {
 	HealthcareProfessionalID string `json:"healthcareProfessionalID"`
 	HealthcareProfessional   string `json:"healthcareProfessional"`
 	PatientID                string `json:"patientID"`
+	PatientName              string `json:"patientName"`
 	CreatedDate              int64  `json:"createdDate"`
 	Status                   int    `json:"status"`
 	StatusChangedDate        int64  `json:"statusChangedDate"`
