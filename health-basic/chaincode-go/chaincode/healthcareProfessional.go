@@ -14,6 +14,12 @@ type AddPatientMedicalRecordResponse struct {
 	HealthRecordAdded               bool `json:"healthRecordAdded"`
 }
 
+type RequestPatientMedicalDataResponse struct {
+	HealthcareProfessionalAlreadyHasAccess bool `json:"healthcareProfessionalHasAccess"`
+	AlreadyHavePendingRequest              bool `json:"alreadyHavePendingRequest"`
+	RequestSent                            bool `json:"requestSent"`
+}
+
 type GetPatientMedicalHistoryResponse struct {
 	HealthcareProfessionalHasAccess bool           `json:"healthcareProfessionalHasAccess"`
 	HealthRecords                   []HealthRecord `json:"healthRecords"`
@@ -106,28 +112,37 @@ func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.T
 
 func (c *HealthContract) RequestPatientMedicalData(ctx contractapi.TransactionContextInterface,
 	patientID, patientName, description, healthcareProfessionalID,
-	healthcareProfessional, requestID string, expirationDate int64) error {
+	healthcareProfessional, requestID string, expirationDate int64) (*RequestPatientMedicalDataResponse, error) {
 
-	request := Request{
-		ResourceType:             1,
-		RequestID:                requestID,
-		Description:              description,
-		PatientID:                patientID,
-		PatientName:              patientName,
-		Status:                   0,
-		HealthcareProfessionalID: healthcareProfessionalID,
-		HealthcareProfessional:   healthcareProfessional,
-		StatusChangedDate:        time.Now().Unix(),
-		CreatedDate:              time.Now().Unix(),
-		ExpirationDate:           expirationDate,
+	resp := RequestPatientMedicalDataResponse{}
+
+	resp.HealthcareProfessionalAlreadyHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
+	resp.AlreadyHavePendingRequest = checkIfHealthcareProfessionaRequestAlreadyExist(ctx, patientID, healthcareProfessionalID)
+
+	if !resp.HealthcareProfessionalAlreadyHasAccess && !resp.AlreadyHavePendingRequest {
+		request := Request{
+			ResourceType:             1,
+			RequestID:                requestID,
+			Description:              description,
+			PatientID:                patientID,
+			PatientName:              patientName,
+			Status:                   0,
+			HealthcareProfessionalID: healthcareProfessionalID,
+			HealthcareProfessional:   healthcareProfessional,
+			StatusChangedDate:        time.Now().Unix(),
+			CreatedDate:              time.Now().Unix(),
+			ExpirationDate:           expirationDate,
+		}
+
+		err := storeRequest(ctx, request)
+		if err != nil {
+			return nil, fmt.Errorf("failed to store request: %v", err)
+		}
+
+		resp.RequestSent = true
 	}
 
-	err := storeRequest(ctx, request)
-	if err != nil {
-		return fmt.Errorf("failed to store request: %v", err)
-	}
-
-	return nil
+	return &resp, nil
 }
 
 func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.TransactionContextInterface, healthcareProfessionalID string) ([]Request, error) {
@@ -216,6 +231,22 @@ func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextI
             "patientID": "%s",
             "healthcareProfessionalID": "%s",
             "resourceType": 2,
+            "expirationDate": {
+                "$gt": %d
+            }
+        }
+    }`, patientID, healthcareProfessionalID, time.Now().Unix())
+
+	return checkIfAnyDataAlreadyExist(ctx, queryString)
+}
+
+func checkIfHealthcareProfessionaRequestAlreadyExist(ctx contractapi.TransactionContextInterface, patientID, healthcareProfessionalID string) bool {
+	queryString := fmt.Sprintf(`{
+        "selector": {
+            "patientID": "%s",
+            "healthcareProfessionalID": "%s",
+            "resourceType": 1,
+			"status" : 0,
             "expirationDate": {
                 "$gt": %d
             }
