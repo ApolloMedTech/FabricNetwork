@@ -64,6 +64,9 @@ func (c *HealthContract) GetHealthRecordWithPHealthcareProfessionalByID(ctx cont
 
 func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.TransactionContextInterface,
 	healthcareProfessionalID string) ([]Access, error) {
+
+	var accesses = []Access{}
+
 	// Construct the selector query to retrieve accesses by patientID
 	queryString := fmt.Sprintf(`{
         "selector": {
@@ -75,12 +78,9 @@ func (c *HealthContract) GetAccessesByHealthcareProfessionalID(ctx contractapi.T
 	// Execute the selector query
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return []Access{}, nil
+		return accesses, nil
 	}
 	defer queryResultsIterator.Close()
-
-	// Initialize an empty slice to store retrieved accesses
-	var accesses []Access
 
 	// Iterate through the query results
 	for queryResultsIterator.HasNext() {
@@ -131,6 +131,9 @@ func (c *HealthContract) RequestPatientMedicalData(ctx contractapi.TransactionCo
 }
 
 func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.TransactionContextInterface, healthcareProfessionalID string) ([]Request, error) {
+
+	var requests = []Request{}
+
 	queryString := fmt.Sprintf(`{
         "selector": {
             "healthcareProfessionalID": "%s",
@@ -144,11 +147,10 @@ func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.T
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
-		return []Request{}, nil
+		return requests, nil
 	}
 	defer queryResultsIterator.Close()
 
-	var requests []Request
 	for queryResultsIterator.HasNext() {
 		queryResponse, err := queryResultsIterator.Next()
 		if err != nil {
