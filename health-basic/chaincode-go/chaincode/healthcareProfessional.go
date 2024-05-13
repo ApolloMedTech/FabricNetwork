@@ -28,15 +28,17 @@ func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 	patientID, healthcareProfessionalID string) (*GetPatientMedicalHistoryResponse, error) {
 
 	resp := GetPatientMedicalHistoryResponse{}
+	resp.HealthRecords = []HealthRecord{}
+
 	resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
 
-	// if resp.HealthcareProfessionalHasAccess {
-	healthRecords, err := c.GetMedicalHistory(ctx, patientID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get patient wallet: %v", err)
+	if resp.HealthcareProfessionalHasAccess {
+		healthRecords, err := c.GetMedicalHistory(ctx, patientID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get patient wallet: %v", err)
+		}
+		resp.HealthRecords = healthRecords
 	}
-	resp.HealthRecords = healthRecords
-	// }
 
 	return &resp, nil
 }
@@ -44,17 +46,18 @@ func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 func (c *HealthContract) GetHealthRecordWithPHealthcareProfessionalByID(ctx contractapi.TransactionContextInterface, patientID, healthcareProfessionalID, recordID string) (*GetHealthRecordWithPHealthcareProfessionalByIDResponse, error) {
 
 	resp := GetHealthRecordWithPHealthcareProfessionalByIDResponse{}
-	// resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
+	resp.HealthRecord = HealthRecord{}
+	resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
 
-	// if resp.HealthcareProfessionalHasAccess {
-	healthRecord, err := getHealthRecordByID(ctx, patientID, recordID)
+	if resp.HealthcareProfessionalHasAccess {
+		healthRecord, err := getHealthRecordByID(ctx, patientID, recordID)
 
-	if err != nil {
-		return nil, fmt.Errorf("erro ao obter o dado de saúde: %v", err)
+		if err != nil {
+			return nil, fmt.Errorf("erro ao obter o dado de saúde: %v", err)
+		}
+
+		resp.HealthRecord = *healthRecord
 	}
-
-	resp.HealthRecord = *healthRecord
-	// }
 
 	return &resp, nil
 }
@@ -132,9 +135,12 @@ func (c *HealthContract) GetRequestsWithHealthcareProfessional(ctx contractapi.T
         "selector": {
             "healthcareProfessionalID": "%s",
 			"resourceType": 1,
-			"status" : 0
+			"status" : 0,
+			"expirationDate": {
+                "$gt": %d
+            }
         }
-    }`, healthcareProfessionalID)
+    }`, healthcareProfessionalID, time.Now().Unix())
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
@@ -164,40 +170,40 @@ func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 	organization, recordType, speciality string, eventDate int64) (*AddPatientMedicalRecordResponse, error) {
 
 	resp := AddPatientMedicalRecordResponse{}
-	// resp.HealthRecordAlreadyExist = checkIfHealthRecordAlreadyExist(ctx, recordID, patientID)
-	// resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
+	resp.HealthRecordAlreadyExist = checkIfHealthRecordAlreadyExist(ctx, recordID, patientID)
+	resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
 
-	// if !resp.HealthRecordAlreadyExist && resp.HealthcareProfessionalHasAccess {
-	newRecord := HealthRecord{
-		RecordID:                 recordID,
-		Description:              description,
-		CreatedDate:              time.Now().Unix(),
-		HealthCareProfessional:   healthcareProfessional,
-		HealthCareProfessionalID: healthcareProfessionalID,
-		EventDate:                eventDate,
-		Organization:             organization,
-		RecordType:               recordType,
-		Speciality:               speciality,
+	if !resp.HealthRecordAlreadyExist && resp.HealthcareProfessionalHasAccess {
+		newRecord := HealthRecord{
+			RecordID:                 recordID,
+			Description:              description,
+			CreatedDate:              time.Now().Unix(),
+			HealthCareProfessional:   healthcareProfessional,
+			HealthCareProfessionalID: healthcareProfessionalID,
+			EventDate:                eventDate,
+			Organization:             organization,
+			RecordType:               recordType,
+			Speciality:               speciality,
+		}
+
+		compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create composite key: %v", err)
+		}
+
+		patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get patient wallet: %v", err)
+		}
+
+		patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
+
+		if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
+			return nil, fmt.Errorf("failed to update the wallet: %v", err)
+		}
+
+		resp.HealthRecordAdded = true
 	}
-
-	compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create composite key: %v", err)
-	}
-
-	patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get patient wallet: %v", err)
-	}
-
-	patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
-
-	if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
-		return nil, fmt.Errorf("failed to update the wallet: %v", err)
-	}
-
-	resp.HealthRecordAdded = true
-	// }
 
 	return &resp, nil
 }
@@ -212,7 +218,7 @@ func checkIfHealthcareProfessionalHaveAccess(ctx contractapi.TransactionContextI
                 "$gt": %d
             }
         }
-    }`, patientID, healthcareProfessionalID, 1715460310)
+    }`, patientID, healthcareProfessionalID, time.Now().Unix())
 
 	return checkIfAnyDataAlreadyExist(ctx, queryString)
 }

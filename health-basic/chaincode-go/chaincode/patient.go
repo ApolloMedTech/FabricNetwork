@@ -151,9 +151,12 @@ func (c *HealthContract) GetRequestsWithPatient(ctx contractapi.TransactionConte
         "selector": {
             "patientID": "%s",
 			"resourceType": 1,
-			"status" : 0
+			"status" : 0,
+			"expirationDate": {
+                "$gt": %d
+            }
         }
-    }`, patientID)
+    }`, patientID, time.Now().Unix())
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
