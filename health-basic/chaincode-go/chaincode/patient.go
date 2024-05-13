@@ -107,10 +107,11 @@ func (c *HealthContract) RemoveAccess(ctx contractapi.TransactionContextInterfac
 
 	queryString := fmt.Sprintf(`{
         "selector": {
+			"requestID": "%s",
 			"patientID": "%s",
 			"resourceType": 2
         }
-    }`, "Acesses", "requestID", requestID, patientID)
+    }`, requestID, patientID)
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
