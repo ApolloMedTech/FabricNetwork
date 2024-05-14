@@ -1,0 +1,810 @@
+[
+    {
+        "PatientID": "123456",
+        "Description": "Routine checkup for general health assessment.",
+        "EventDate": "2023-06-12",
+        "Speciality": "General Medicine",
+        "RecordType": "Checkup",
+        "Organization": "City Hospital"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Treatment for common cold symptoms.",
+        "EventDate": "2023-07-05",
+        "Speciality": "Internal Medicine",
+        "RecordType": "Treatment",
+        "Organization": "Community Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for back pain issues.",
+        "EventDate": "2023-08-18",
+        "Speciality": "Orthopedics",
+        "RecordType": "Consultation",
+        "Organization": "OrthoCare Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Annual physical examination.",
+        "EventDate": "2023-09-20",
+        "Speciality": "General Medicine",
+        "RecordType": "Physical Examination",
+        "Organization": "Family Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Follow-up appointment for medication review.",
+        "EventDate": "2023-10-01",
+        "Speciality": "Pharmacy",
+        "RecordType": "Follow-up",
+        "Organization": "Local Pharmacy"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Dental checkup and cleaning.",
+        "EventDate": "2023-11-25",
+        "Speciality": "Dentistry",
+        "RecordType": "Dental Checkup",
+        "Organization": "Smile Dental Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Eye examination for vision correction.",
+        "EventDate": "2023-12-09",
+        "Speciality": "Optometry",
+        "RecordType": "Eye Examination",
+        "Organization": "Clear Vision Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Nutritional counseling session.",
+        "EventDate": "2023-07-15",
+        "Speciality": "Nutrition",
+        "RecordType": "Counseling",
+        "Organization": "Health & Wellness Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Physical therapy session for knee injury.",
+        "EventDate": "2023-08-30",
+        "Speciality": "Physical Therapy",
+        "RecordType": "Therapy Session",
+        "Organization": "Rehabilitation Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Mental health consultation for anxiety management.",
+        "EventDate": "2023-09-05",
+        "Speciality": "Psychiatry",
+        "RecordType": "Mental Health Consultation",
+        "Organization": "Mindful Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Blood pressure monitoring.",
+        "EventDate": "2023-10-12",
+        "Speciality": "Cardiology",
+        "RecordType": "Monitoring",
+        "Organization": "Heart Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "X-ray imaging for suspected fracture.",
+        "EventDate": "2023-11-03",
+        "Speciality": "Radiology",
+        "RecordType": "Imaging",
+        "Organization": "Imaging Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Laboratory test for cholesterol levels.",
+        "EventDate": "2023-12-17",
+        "Speciality": "Laboratory",
+        "RecordType": "Test",
+        "Organization": "LabCorp"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Gynecological examination.",
+        "EventDate": "2023-06-22",
+        "Speciality": "Obstetrics & Gynecology",
+        "RecordType": "Examination",
+        "Organization": "Women's Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Prenatal care visit.",
+        "EventDate": "2023-07-08",
+        "Speciality": "Obstetrics",
+        "RecordType": "Prenatal Care",
+        "Organization": "Maternity Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Vaccination for flu prevention.",
+        "EventDate": "2023-08-03",
+        "Speciality": "Immunology",
+        "RecordType": "Vaccination",
+        "Organization": "Vaccination Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Podiatry consultation for foot pain.",
+        "EventDate": "2023-09-14",
+        "Speciality": "Podiatry",
+        "RecordType": "Consultation",
+        "Organization": "Foot Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Chiropractic adjustment session.",
+        "EventDate": "2023-10-19",
+        "Speciality": "Chiropractic",
+        "RecordType": "Adjustment",
+        "Organization": "Spine Health Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Audiological evaluation for hearing loss.",
+        "EventDate": "2023-11-22",
+        "Speciality": "Audiology",
+        "RecordType": "Evaluation",
+        "Organization": "Hearing Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Allergy testing.",
+        "EventDate": "2023-12-10",
+        "Speciality": "Allergy & Immunology",
+        "RecordType": "Testing",
+        "Organization": "Allergy Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Sleep study for sleep disorder diagnosis.",
+        "EventDate": "2023-06-30",
+        "Speciality": "Sleep Medicine",
+        "RecordType": "Sleep Study",
+        "Organization": "Sleep Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Neurological evaluation for headache.",
+        "EventDate": "2023-07-27",
+        "Speciality": "Neurology",
+        "RecordType": "Evaluation",
+        "Organization": "Brain Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Orthodontic consultation for braces.",
+        "EventDate": "2023-08-18",
+        "Speciality": "Orthodontics",
+        "RecordType": "Consultation",
+        "Organization": "Smile Orthodontics"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Electrocardiogram (ECG) for heart rhythm analysis.",
+        "EventDate": "2023-09-29",
+        "Speciality": "Cardiology",
+        "RecordType": "ECG",
+        "Organization": "Heart Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Colonoscopy for colon cancer screening.",
+        "EventDate": "2023-10-10",
+        "Speciality": "Gastroenterology",
+        "RecordType": "Colonoscopy",
+        "Organization": "Digestive Health Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Pulmonary function test for lung function assessment.",
+        "EventDate": "2023-11-05",
+        "Speciality": "Pulmonology",
+        "RecordType": "PFT",
+        "Organization": "Lung Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Dermatological consultation for skin condition.",
+        "EventDate": "2023-12-12",
+        "Speciality": "Dermatology",
+        "RecordType": "Consultation",
+        "Organization": "Skin Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "MRI scan for brain imaging.",
+        "EventDate": "2023-06-15",
+        "Speciality": "Radiology",
+        "RecordType": "MRI",
+        "Organization": "MRI Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Ultrasound scan for abdominal examination.",
+        "EventDate": "2023-07-28",
+        "Speciality": "Radiology",
+        "RecordType": "Ultrasound",
+        "Organization": "Ultrasound Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Mammogram for breast cancer screening.",
+        "EventDate": "2023-08-21",
+        "Speciality": "Radiology",
+        "RecordType": "Mammogram",
+        "Organization": "Breast Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Hemoglobin A1c test for diabetes management.",
+        "EventDate": "2023-09-19",
+        "Speciality": "Endocrinology",
+        "RecordType": "Test",
+        "Organization": "Diabetes Care Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Cardiac stress test for heart function assessment.",
+        "EventDate": "2023-10-16",
+        "Speciality": "Cardiology",
+        "RecordType": "Stress Test",
+        "Organization": "Heart Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Physical examination for employment health screening.",
+        "EventDate": "2023-11-29",
+        "Speciality": "Occupational Health",
+        "RecordType": "Employment Exam",
+        "Organization": "Occupational Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Echocardiogram (Echo) for heart imaging.",
+        "EventDate": "2023-12-03",
+        "Speciality": "Cardiology",
+        "RecordType": "Echo",
+        "Organization": "Heart Imaging Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Cataract surgery consultation.",
+        "EventDate": "2023-06-25",
+        "Speciality": "Ophthalmology",
+        "RecordType": "Consultation",
+        "Organization": "Eye Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Physical examination for sports clearance.",
+        "EventDate": "2023-07-01",
+        "Speciality": "Sports Medicine",
+        "RecordType": "Sports Physical",
+        "Organization": "Sports Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Gastroscopy for digestive system examination.",
+        "EventDate": "2023-08-09",
+        "Speciality": "Gastroenterology",
+        "RecordType": "Gastroscopy",
+        "Organization": "Digestive Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Hearing aid fitting.",
+        "EventDate": "2023-09-14",
+        "Speciality": "Audiology",
+        "RecordType": "Fitting",
+        "Organization": "Hearing Aid Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Genetic counseling for hereditary conditions.",
+        "EventDate": "2023-10-20",
+        "Speciality": "Genetics",
+        "RecordType": "Counseling",
+        "Organization": "Genetics Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Renal function test for kidney health.",
+        "EventDate": "2023-11-02",
+        "Speciality": "Nephrology",
+        "RecordType": "Test",
+        "Organization": "Kidney Care Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Neurosurgical consultation for spine condition.",
+        "EventDate": "2023-12-14",
+        "Speciality": "Neurosurgery",
+        "RecordType": "Consultation",
+        "Organization": "Spine Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "ENT examination for ear, nose, and throat issues.",
+        "EventDate": "2023-06-10",
+        "Speciality": "Otorhinolaryngology",
+        "RecordType": "ENT Exam",
+        "Organization": "ENT Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Colon cancer screening test.",
+        "EventDate": "2023-07-15",
+        "Speciality": "Gastroenterology",
+        "RecordType": "Screening Test",
+        "Organization": "Colon Cancer Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Psychotherapy session for mental health support.",
+        "EventDate": "2023-08-18",
+        "Speciality": "Psychology",
+        "RecordType": "Therapy Session",
+        "Organization": "Mind & Mood Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Home blood glucose monitoring training.",
+        "EventDate": "2023-09-30",
+        "Speciality": "Endocrinology",
+        "RecordType": "Training",
+        "Organization": "Diabetes Education Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "COVID-19 vaccination.",
+        "EventDate": "2024-01-15",
+        "Speciality": "Immunology",
+        "RecordType": "Vaccination",
+        "Organization": "Vaccination Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Annual flu shot.",
+        "EventDate": "2024-02-08",
+        "Speciality": "Immunology",
+        "RecordType": "Vaccination",
+        "Organization": "Local Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Dental cleaning and checkup.",
+        "EventDate": "2024-03-20",
+        "Speciality": "Dentistry",
+        "RecordType": "Dental Checkup",
+        "Organization": "Smile Dental Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Physical therapy for shoulder injury.",
+        "EventDate": "2024-04-10",
+        "Speciality": "Physical Therapy",
+        "RecordType": "Therapy Session",
+        "Organization": "Rehabilitation Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for allergy symptoms.",
+        "EventDate": "2024-05-02",
+        "Speciality": "Allergy & Immunology",
+        "RecordType": "Consultation",
+        "Organization": "Allergy Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Colonoscopy for colon cancer screening.",
+        "EventDate": "2024-01-25",
+        "Speciality": "Gastroenterology",
+        "RecordType": "Colonoscopy",
+        "Organization": "Digestive Health Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for joint pain.",
+        "EventDate": "2024-02-18",
+        "Speciality": "Rheumatology",
+        "RecordType": "Consultation",
+        "Organization": "Joint Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "MRI scan for knee injury.",
+        "EventDate": "2024-03-10",
+        "Speciality": "Radiology",
+        "RecordType": "MRI",
+        "Organization": "MRI Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Ultrasound for prenatal checkup.",
+        "EventDate": "2024-04-05",
+        "Speciality": "Obstetrics",
+        "RecordType": "Ultrasound",
+        "Organization": "Maternity Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Blood pressure monitoring.",
+        "EventDate": "2024-05-08",
+        "Speciality": "Cardiology",
+        "RecordType": "Monitoring",
+        "Organization": "Heart Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Annual eye examination.",
+        "EventDate": "2024-01-12",
+        "Speciality": "Ophthalmology",
+        "RecordType": "Eye Examination",
+        "Organization": "Clear Vision Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for sleep disorder.",
+        "EventDate": "2024-02-27",
+        "Speciality": "Sleep Medicine",
+        "RecordType": "Consultation",
+        "Organization": "Sleep Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Neurological evaluation for migraines.",
+        "EventDate": "2024-03-15",
+        "Speciality": "Neurology",
+        "RecordType": "Evaluation",
+        "Organization": "Brain Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Counseling session for stress management.",
+        "EventDate": "2024-04-18",
+        "Speciality": "Psychology",
+        "RecordType": "Counseling",
+        "Organization": "Mind & Mood Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Genetic testing for hereditary conditions.",
+        "EventDate": "2024-05-05",
+        "Speciality": "Genetics",
+        "RecordType": "Testing",
+        "Organization": "Genetics Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for hearing loss.",
+        "EventDate": "2024-01-28",
+        "Speciality": "Audiology",
+        "RecordType": "Consultation",
+        "Organization": "Hearing Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Annual physical examination.",
+        "EventDate": "2024-02-10",
+        "Speciality": "General Medicine",
+        "RecordType": "Physical Examination",
+        "Organization": "Family Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for dermatological condition.",
+        "EventDate": "2024-03-28",
+        "Speciality": "Dermatology",
+        "RecordType": "Consultation",
+        "Organization": "Skin Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Endoscopy for gastrointestinal evaluation.",
+        "EventDate": "2024-04-20",
+        "Speciality": "Gastroenterology",
+        "RecordType": "Endoscopy",
+        "Organization": "Digestive Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for back pain.",
+        "EventDate": "2024-05-02",
+        "Speciality": "Orthopedics",
+        "RecordType": "Consultation",
+        "Organization": "OrthoCare Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Pulmonary function test for lung function assessment.",
+        "EventDate": "2024-01-22",
+        "Speciality": "Pulmonology",
+        "RecordType": "PFT",
+        "Organization": "Lung Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for fertility concerns.",
+        "EventDate": "2024-02-12",
+        "Speciality": "Reproductive Endocrinology",
+        "RecordType": "Consultation",
+        "Organization": "Fertility Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Annual mammogram for breast cancer screening.",
+        "EventDate": "2024-03-05",
+        "Speciality": "Radiology",
+        "RecordType": "Mammogram",
+        "Organization": "Breast Health Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for weight management.",
+        "EventDate": "2024-04-15",
+        "Speciality": "Nutrition",
+        "RecordType": "Consultation",
+        "Organization": "Weight Management Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for arthritis.",
+        "EventDate": "2024-05-08",
+        "Speciality": "Rheumatology",
+        "RecordType": "Consultation",
+        "Organization": "Joint Care Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for depression.",
+        "EventDate": "2024-01-18",
+        "Speciality": "Psychiatry",
+        "RecordType": "Consultation",
+        "Organization": "Mental Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Cardiac stress test for heart function assessment.",
+        "EventDate": "2024-02-29",
+        "Speciality": "Cardiology",
+        "RecordType": "Stress Test",
+        "Organization": "Heart Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Physical therapy for hip injury.",
+        "EventDate": "2024-03-25",
+        "Speciality": "Physical Therapy",
+        "RecordType": "Therapy Session",
+        "Organization": "Rehabilitation Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Gynecological examination.",
+        "EventDate": "2024-04-12",
+        "Speciality": "Obstetrics & Gynecology",
+        "RecordType": "Examination",
+        "Organization": "Women's Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for diabetes management.",
+        "EventDate": "2024-05-09",
+        "Speciality": "Endocrinology",
+        "RecordType": "Consultation",
+        "Organization": "Diabetes Care Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Orthodontic adjustment.",
+        "EventDate": "2024-01-20",
+        "Speciality": "Orthodontics",
+        "RecordType": "Adjustment",
+        "Organization": "Smile Orthodontics"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for asthma management.",
+        "EventDate": "2024-02-15",
+        "Speciality": "Pulmonology",
+        "RecordType": "Consultation",
+        "Organization": "Asthma Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for hypertension.",
+        "EventDate": "2024-03-10",
+        "Speciality": "Cardiology",
+        "RecordType": "Consultation",
+        "Organization": "Heart Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Colon cancer screening test.",
+        "EventDate": "2024-04-22",
+        "Speciality": "Gastroenterology",
+        "RecordType": "Screening Test",
+        "Organization": "Colon Cancer Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for thyroid disorder.",
+        "EventDate": "2024-05-07",
+        "Speciality": "Endocrinology",
+        "RecordType": "Consultation",
+        "Organization": "Thyroid Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for hearing aids.",
+        "EventDate": "2024-01-30",
+        "Speciality": "Audiology",
+        "RecordType": "Consultation",
+        "Organization": "Hearing Aid Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for sinusitis.",
+        "EventDate": "2024-02-25",
+        "Speciality": "Otorhinolaryngology",
+        "RecordType": "Consultation",
+        "Organization": "Sinus Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for kidney stones.",
+        "EventDate": "2024-03-20",
+        "Speciality": "Nephrology",
+        "RecordType": "Consultation",
+        "Organization": "Kidney Stone Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for vision correction.",
+        "EventDate": "2024-04-15",
+        "Speciality": "Ophthalmology",
+        "RecordType": "Consultation",
+        "Organization": "Vision Correction Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Annual cholesterol test.",
+        "EventDate": "2024-05-03",
+        "Speciality": "Cardiology",
+        "RecordType": "Test",
+        "Organization": "Heart Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for depression.",
+        "EventDate": "2024-01-18",
+        "Speciality": "Psychiatry",
+        "RecordType": "Consultation",
+        "Organization": "Mental Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for arthritis.",
+        "EventDate": "2024-02-12",
+        "Speciality": "Rheumatology",
+        "RecordType": "Consultation",
+        "Organization": "Joint Care Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Cardiac stress test for heart function assessment.",
+        "EventDate": "2024-02-29",
+        "Speciality": "Cardiology",
+        "RecordType": "Stress Test",
+        "Organization": "Heart Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Physical therapy for hip injury.",
+        "EventDate": "2024-03-25",
+        "Speciality": "Physical Therapy",
+        "RecordType": "Therapy Session",
+        "Organization": "Rehabilitation Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Gynecological examination.",
+        "EventDate": "2024-04-12",
+        "Speciality": "Obstetrics & Gynecology",
+        "RecordType": "Examination",
+        "Organization": "Women's Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for diabetes management.",
+        "EventDate": "2024-05-09",
+        "Speciality": "Endocrinology",
+        "RecordType": "Consultation",
+        "Organization": "Diabetes Care Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Orthodontic adjustment.",
+        "EventDate": "2024-01-20",
+        "Speciality": "Orthodontics",
+        "RecordType": "Adjustment",
+        "Organization": "Smile Orthodontics"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for asthma management.",
+        "EventDate": "2024-02-15",
+        "Speciality": "Pulmonology",
+        "RecordType": "Consultation",
+        "Organization": "Asthma Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for hypertension.",
+        "EventDate": "2024-03-10",
+        "Speciality": "Cardiology",
+        "RecordType": "Consultation",
+        "Organization": "Heart Health Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Colon cancer screening test.",
+        "EventDate": "2024-04-22",
+        "Speciality": "Gastroenterology",
+        "RecordType": "Screening Test",
+        "Organization": "Colon Cancer Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for thyroid disorder.",
+        "EventDate": "2024-05-07",
+        "Speciality": "Endocrinology",
+        "RecordType": "Consultation",
+        "Organization": "Thyroid Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for hearing aids.",
+        "EventDate": "2024-01-30",
+        "Speciality": "Audiology",
+        "RecordType": "Consultation",
+        "Organization": "Hearing Aid Center"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for sinusitis.",
+        "EventDate": "2024-02-25",
+        "Speciality": "Otorhinolaryngology",
+        "RecordType": "Consultation",
+        "Organization": "Sinus Care Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for kidney stones.",
+        "EventDate": "2024-03-20",
+        "Speciality": "Nephrology",
+        "RecordType": "Consultation",
+        "Organization": "Kidney Stone Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Consultation for vision correction.",
+        "EventDate": "2024-04-15",
+        "Speciality": "Ophthalmology",
+        "RecordType": "Consultation",
+        "Organization": "Vision Correction Clinic"
+    },
+    {
+        "PatientID": "123456",
+        "Description": "Annual cholesterol test.",
+        "EventDate": "2024-05-03",
+        "Speciality": "Cardiology",
+        "RecordType": "Test",
+        "Organization": "Heart Care Clinic"
+    }
+]
