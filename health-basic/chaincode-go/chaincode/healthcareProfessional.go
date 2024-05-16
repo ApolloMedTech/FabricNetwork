@@ -25,7 +25,7 @@ type GetPatientMedicalHistoryResponse struct {
 	HealthRecords                   []HealthRecord `json:"healthRecords"`
 }
 
-type GetHealthRecordWithPHealthcareProfessionalByIDResponse struct {
+type GetHealthRecordWithHealthcareProfessionalByIDResponse struct {
 	HealthcareProfessionalHasAccess bool         `json:"healthcareProfessionalHasAccess"`
 	HealthRecord                    HealthRecord `json:"healthRecord"`
 }
@@ -39,7 +39,7 @@ func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 	resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
 
 	if resp.HealthcareProfessionalHasAccess {
-		healthRecords, err := c.GetMedicalHistory(ctx, patientID)
+		healthRecords, err := getMedicalHistory(ctx, patientID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get patient wallet: %v", err)
 		}
@@ -49,9 +49,9 @@ func (c *HealthContract) GetPatientMedicalHistory(ctx contractapi.TransactionCon
 	return &resp, nil
 }
 
-func (c *HealthContract) GetHealthRecordWithPHealthcareProfessionalByID(ctx contractapi.TransactionContextInterface, patientID, healthcareProfessionalID, recordID string) (*GetHealthRecordWithPHealthcareProfessionalByIDResponse, error) {
+func (c *HealthContract) GetHealthRecordWithHealthcareProfessionalByID(ctx contractapi.TransactionContextInterface, patientID, healthcareProfessionalID, recordID string) (*GetHealthRecordWithHealthcareProfessionalByIDResponse, error) {
 
-	resp := GetHealthRecordWithPHealthcareProfessionalByIDResponse{}
+	resp := GetHealthRecordWithHealthcareProfessionalByIDResponse{}
 	resp.HealthRecord = HealthRecord{}
 	resp.HealthcareProfessionalHasAccess = checkIfHealthcareProfessionalHaveAccess(ctx, patientID, healthcareProfessionalID)
 
@@ -192,7 +192,9 @@ func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 
 	if !resp.HealthRecordAlreadyExist && resp.HealthcareProfessionalHasAccess {
 		newRecord := HealthRecord{
+			ResourceType:             3,
 			RecordID:                 recordID,
+			PatientID:                patientID,
 			Description:              description,
 			CreatedDate:              time.Now().Unix(),
 			HealthCareProfessional:   healthcareProfessional,
@@ -203,20 +205,19 @@ func (c *HealthContract) AddPatientMedicalRecord(ctx contractapi.TransactionCont
 			Speciality:               speciality,
 		}
 
-		compositeKey, err := createPatientWalletCompositeKey(ctx, patientID)
+		compositeKey, err := createPatientWalletCompositeKey(ctx, patientID, recordID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create composite key: %v", err)
 		}
 
-		patientWallet, err := getCurrentPatientWallet(ctx, compositeKey)
+		newRecordJSON, err := json.Marshal(newRecord)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get patient wallet: %v", err)
+			return &resp, fmt.Errorf("failed to serialize request to JSON: %v", err)
 		}
 
-		patientWallet.HealthRecords = append(patientWallet.HealthRecords, newRecord)
-
-		if err := updateWallet(ctx, *patientWallet, compositeKey); err != nil {
-			return nil, fmt.Errorf("failed to update the wallet: %v", err)
+		err = ctx.GetStub().PutState(compositeKey, newRecordJSON)
+		if err != nil {
+			return &resp, fmt.Errorf("failed to update health records: %v", err)
 		}
 
 		resp.HealthRecordAdded = true

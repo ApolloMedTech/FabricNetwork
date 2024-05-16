@@ -12,26 +12,53 @@ type HealthContract struct {
 	contractapi.Contract
 }
 
-type PatientWallet struct {
-	HealthRecords []HealthRecord `json:"healthRecords"`
+func getMedicalHistory(ctx contractapi.TransactionContextInterface, patientID string) ([]HealthRecord, error) {
+
+	var healthRecords = []HealthRecord{}
+
+	// Injeto o ID da wallet e assim é mais rápido.
+	queryString := fmt.Sprintf(`{
+        "selector": {
+			"resourceType": 3,
+			"patientID": "%s"
+        }
+    }`, patientID)
+
+	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+
+	// Aqui não posso dar erro, tenho de fazer desta maneira
+	if err != nil {
+		return healthRecords, nil
+	}
+
+	defer queryResultsIterator.Close()
+
+	for queryResultsIterator.HasNext() {
+		queryResponse, err := queryResultsIterator.Next()
+
+		var healthRecord HealthRecord
+
+		if err != nil {
+			return nil, fmt.Errorf("erro ao obter os dados do paciente: %v", err)
+		}
+
+		if err := json.Unmarshal(queryResponse.Value, &healthRecord); err != nil {
+			return nil, fmt.Errorf("erro ao transformar os dados na wallet: %v", err)
+		}
+
+		healthRecords = append(healthRecords, healthRecord)
+	}
+
+	return healthRecords, nil
 }
 
 func getHealthRecordByID(ctx contractapi.TransactionContextInterface, patientID, recordID string) (*HealthRecord, error) {
 
-	// Injeto o ID da wallet e assim é mais rápido.
 	queryString := fmt.Sprintf(`{
-	    "selector": {
-	        "_id": "\u0000%s\u0000%s\u0000%s\u0000",
-			"healthRecords": {
-				"$elemMatch": {
-				   "recordID": "%s"
-				}
-			 }
-	    },
-		"fields": [
-			"healthRecords"
-		]
-	}`, "PatientWallet", "patientID", patientID, recordID)
+        "selector": {
+            "_id": "\u0000%s\u0000%s\u0000%s\u0000%s\u0000%s\u0000"
+        }
+    }`, "HealthRecords", "patientID", patientID, "recordID", recordID)
 
 	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 
@@ -42,7 +69,6 @@ func getHealthRecordByID(ctx contractapi.TransactionContextInterface, patientID,
 
 	defer queryResultsIterator.Close()
 
-	var patientWallet PatientWallet
 	var healthRecord HealthRecord
 
 	if queryResultsIterator.HasNext() {
@@ -52,11 +78,9 @@ func getHealthRecordByID(ctx contractapi.TransactionContextInterface, patientID,
 			return nil, fmt.Errorf("erro ao obter os dados do paciente: %v", err)
 		}
 
-		if err := json.Unmarshal(queryResponse.Value, &patientWallet); err != nil {
+		if err := json.Unmarshal(queryResponse.Value, &healthRecord); err != nil {
 			return nil, fmt.Errorf("erro ao transformar os dados na wallet: %v", err)
 		}
-
-		healthRecord = patientWallet.HealthRecords[0]
 	} else {
 		healthRecord = HealthRecord{}
 	}
@@ -98,20 +122,6 @@ func addAccess(ctx contractapi.TransactionContextInterface, requestID, patientID
 	return nil
 }
 
-func updateWallet(ctx contractapi.TransactionContextInterface, patientWallet PatientWallet, patientID string) error {
-	updatedWallet, err := json.Marshal(patientWallet)
-	if err != nil {
-		return fmt.Errorf("failed to marshal updated health records: %v", err)
-	}
-
-	err = ctx.GetStub().PutState(patientID, updatedWallet)
-	if err != nil {
-		return fmt.Errorf("failed to update health records: %v", err)
-	}
-
-	return nil
-}
-
 func storeRequest(ctx contractapi.TransactionContextInterface, request Request) error {
 
 	requestAlreadyExist := checkIfRequestAlreadyExist(ctx, request.PatientID, request.HealthcareProfessionalID, request.RequestID)
@@ -139,28 +149,6 @@ func storeRequest(ctx contractapi.TransactionContextInterface, request Request) 
 	return nil
 }
 
-func getCurrentPatientWallet(ctx contractapi.TransactionContextInterface,
-	key string) (*PatientWallet, error) {
-
-	walletBytes, err := ctx.GetStub().GetState(key)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read patient wallet: %v", err)
-	}
-
-	var patientWallet PatientWallet
-
-	if walletBytes != nil {
-		err = json.Unmarshal(walletBytes, &patientWallet)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal patient wallet: %v", err)
-		}
-	} else {
-		patientWallet.HealthRecords = []HealthRecord{}
-	}
-
-	return &patientWallet, nil
-}
-
 func checkIfRequestAlreadyExist(ctx contractapi.TransactionContextInterface, patientID, healthcareProfessionalID, requestID string) bool {
 
 	queryString := fmt.Sprintf(`{
@@ -177,16 +165,12 @@ func checkIfRequestAlreadyExist(ctx contractapi.TransactionContextInterface, pat
 }
 
 func checkIfHealthRecordAlreadyExist(ctx contractapi.TransactionContextInterface, recordID, patientID string) bool {
+
 	queryString := fmt.Sprintf(`{
         "selector": {
-            "_id": "\u0000%s\u0000%s\u0000%s\u0000",
-            "healthRecords": {
-				"$elemMatch": {
-					"recordID": "%s"
-				 }
-			}
+            "_id": "\u0000%s\u0000%s\u0000%s\u0000%s\u0000"
         }
-    }`, "PatientWallet", "patientID", patientID, recordID)
+    }`, "HealthRecords", "patientID", patientID, recordID)
 
 	return checkIfAnyDataAlreadyExist(ctx, queryString)
 }

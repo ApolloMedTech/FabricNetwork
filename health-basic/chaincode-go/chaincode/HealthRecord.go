@@ -1,7 +1,9 @@
 package chaincode
 
 type HealthRecord struct {
+	ResourceType             int    `json:"resourceType"` // 3
 	RecordID                 string `json:"recordID"`
+	PatientID                string `json:"patientID"`
 	Description              string `json:"description"`
 	HealthCareProfessionalID string `json:"healthCareProfessionalID"`
 	HealthCareProfessional   string `json:"healthCareProfessional"`

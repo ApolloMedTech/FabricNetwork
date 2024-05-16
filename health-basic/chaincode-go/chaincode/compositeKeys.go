@@ -6,8 +6,8 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-func createPatientWalletCompositeKey(ctx contractapi.TransactionContextInterface, patientID string) (string, error) {
-	compositeKey, err := ctx.GetStub().CreateCompositeKey("PatientWallet", []string{"patientID", patientID})
+func createPatientWalletCompositeKey(ctx contractapi.TransactionContextInterface, patientID, recordID string) (string, error) {
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("HealthRecords", []string{"patientID", patientID, "recordID", recordID})
 	if err != nil {
 		return "", fmt.Errorf("failed to create composite key: %v", err)
 	}

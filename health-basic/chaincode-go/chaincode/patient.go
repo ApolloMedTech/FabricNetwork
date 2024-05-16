@@ -10,42 +10,9 @@ import (
 
 func (c *HealthContract) GetMedicalHistory(ctx contractapi.TransactionContextInterface, patientID string) ([]HealthRecord, error) {
 
-	// Injeto o ID da wallet e assim é mais rápido.
-	queryString := fmt.Sprintf(`{
-        "selector": {
-            "_id": "\u0000%s\u0000%s\u0000%s\u0000"
-        },
-		"fields": [
-			"healthRecords"
-		]
-    }`, "PatientWallet", "patientID", patientID)
-
-	queryResultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
-
-	// Aqui não posso dar erro, tenho de fazer desta maneira
+	healthRecords, err := getMedicalHistory(ctx, patientID)
 	if err != nil {
-		return []HealthRecord{}, nil
-	}
-
-	defer queryResultsIterator.Close()
-
-	var patientWallet PatientWallet
-	var healthRecords []HealthRecord
-
-	if queryResultsIterator.HasNext() {
-		queryResponse, err := queryResultsIterator.Next()
-
-		if err != nil {
-			return nil, fmt.Errorf("erro ao obter os dados do paciente: %v", err)
-		}
-
-		if err := json.Unmarshal(queryResponse.Value, &patientWallet); err != nil {
-			return nil, fmt.Errorf("erro ao transformar os dados na wallet: %v", err)
-		}
-
-		healthRecords = patientWallet.HealthRecords
-	} else {
-		healthRecords = []HealthRecord{}
+		return nil, fmt.Errorf("failed to get patient wallet: %v", err)
 	}
 
 	return healthRecords, nil
